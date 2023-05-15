@@ -1,0 +1,264 @@
+@import "mixins";
+
+.home {
+    padding: 0 30px;
+
+    .header {
+        display: inline-flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        width: 100%;
+        &__addButton {
+            @include new-ticket-btn();
+        }
+    }
+
+    .completion {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        margin-bottom: 15px;
+
+        &__item {
+            display: flex;
+            flex-direction: column;
+
+            &__h6 {
+                font-weight: 700;
+                color: #7d7f8d;
+            }
+
+            &__h1 {
+                display: flex;
+                font-weight: 700;
+                justify-content: center;
+            }
+        }
+
+        &__bar {
+            width: 35%;
+
+            &__header {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+
+                &__h6 {
+                    font-weight: 700;
+                    color: #7d7f8d;
+                }
+            }
+
+            &__progressBar {
+                width: 100%;
+                height: 15px;
+                border-radius: 12px;
+                position: relative;
+                background-color: $background-gray;
+
+                &__progress {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    height: 15px;
+                    border-radius: 12px;
+                    background-color: $light-green;
+                }
+            }
+        }
+    }
+
+    .statusHeader {
+        width: 100%;
+        border-bottom: 2px solid #f5f5f5;
+
+        &__statusButtons {
+            width: 400px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+
+            &__statusButton {
+                background: white;
+                border: none;
+                font-size: 18px;
+                padding: 8px 5px;
+                min-width: 50px;
+                color: $grey-inactive;
+                &:hover {
+                    filter: brightness(0.9);
+                }
+
+                &__highlight {
+                    font-weight: 700;
+                    border-bottom: 3px solid $blue-color;
+                    color: black;
+                }
+            }
+        }
+    }
+
+    .filters {
+        margin: 20px 0 20px 0;
+
+        &__search {
+            position: relative;
+
+            &__icon {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 8px;
+                margin: auto 0;
+            }
+
+            &__input {
+                border-radius: 4px;
+                padding: 8px 8px 8px 38px;
+                background-color: #f5f5f5;
+                border: none;
+
+                &:focus {
+                    outline: 1px solid #b7b6b6;
+                }
+            }
+        }
+    }
+
+    .tickets {
+        height: 380px;
+        overflow-y: scroll;
+        @include scroll-bar();
+        width: 100%;
+        box-shadow: inset 0 -10px 10px -10px rgba(0, 0, 0, 0.1);
+        &__content {
+            padding-right: 10px;
+
+            &__header {
+                display: flex;
+                flex-direction: row;
+                text-transform: uppercase;
+                font-weight: 700;
+                font-size: 12px;
+                color: $table-header;
+
+                &__name {
+                    width: 30%;
+                    margin-right: 30px;
+                }
+                &__user {
+                    width: 20%;
+                }
+                &__agent {
+                    width: 20%;
+                }
+                &__date {
+                    width: 10%;
+                }
+                &__status {
+                    width: 10%;
+                    min-width: 95px;
+                }
+                &__action {
+                    width: 10%;
+                }
+            }
+            &__row {
+                border-bottom: 2px solid #f5f5f5 !important;
+                height: 70px;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+
+                &__info {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    width: 30%;
+                    margin-right: 30px;
+
+                    &__title {
+                        font-weight: 700;
+                        font-size: 17px;
+                    }
+
+                    &__desc {
+                        color: $table-header;
+                        padding-right: 20px;
+                        margin-bottom: 5px;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                    }
+                }
+                &__name {
+                    color: #2c3046;
+                    font-weight: 550;
+                    width: 20%;
+                    display: flex;
+                    align-items: center;
+                }
+                &__agent {
+                    color: #2c3046;
+                    font-weight: 500;
+                    width: 20%;
+                    display: flex;
+                    align-items: center;
+                }
+                &__date {
+                    width: 10%;
+                    display: flex;
+                    align-items: center;
+                }
+                &__status {
+                    width: 10%;
+                    display: flex;
+                    min-width: 95px;
+                    align-items: center;
+
+                    &__content {
+                        border-radius: 20px;
+                        padding: 5px 10px;
+                        font-weight: 700;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+
+                        &--closed {
+                            color: #249f6b;
+                            background-color: #e9f5f0;
+                        }
+
+                        &--open {
+                            color: #e39232;
+                            background-color: #fcf4eb;
+                        }
+
+                        &--progress {
+                            color: #ffd32e;
+                            background-color: #fffae9;
+                        }
+                    }
+                }
+                &__button {
+                    width: 10%;
+                    display: flex;
+                    align-items: center;
+                }
+            }
+        }
+    }
+
+    .footer {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        height: 40px;
+
+        &__entries {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+    }
+}

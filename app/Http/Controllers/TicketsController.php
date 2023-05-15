@@ -6,6 +6,7 @@ use App\Models\Tickets;
 use App\Http\Requests\StoreTicketsRequest;
 use App\Http\Requests\UpdateTicketsRequest;
 use App\Models\Ticket;
+use Dotenv\Util\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -52,11 +53,72 @@ class TicketsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $ticket = Ticket::all()->toJson();
 
-        return json_decode($ticket);
+        $status = $request->input("status");
+        $entries = $request->input("entries");
+
+
+        $tickets = $request->input("search") ? $this->search($request->input("search"), $status, $entries) : $this->tickets($status, $entries);
+
+        $number_of_tickets = Ticket::count();
+        $number_of_completed_tickets = Ticket::where("status", "=", "Closed")->count();
+        $number_of_progress_tickets = Ticket::where("status", "=", "In progress")->count();
+        $number_of_opened_tickets = Ticket::where("status", "=", "Open")->count();
+        $completion_percentage = number_format((float)(($number_of_completed_tickets / $number_of_tickets) * 100), 1, ".", "");
+
+
+        return view("home", [
+            "number_of_tickets" => $number_of_tickets,
+            "number_of_completed_tickets" => $number_of_completed_tickets,
+            "number_of_progress_tickets" => $number_of_progress_tickets,
+            "number_of_opened_tickets" => $number_of_opened_tickets,
+            "completion_percentage" => $completion_percentage,
+            "tickets" => $tickets
+        ]);
+    }
+
+    private function tickets(string | null $status, string | null $entries)
+    {
+
+
+        $query = Ticket::query();
+
+        $query->whereHas("client");
+        $query->whereHas("user");
+
+        $query->when($status, function ($query) use ($status) {
+            return $query->where("status", $status);
+        });
+
+        $query->when($entries, function ($query) use ($entries) {
+            return $query->paginate($entries);
+        })->when(!$entries, function ($query) {
+            return $query->paginate(20);
+        });
+
+        return $query->get();
+    }
+
+    private function search(string $q, string $status, string $entries)
+    {
+        if ($q != "") {
+            $ticket = Ticket::join("client", "ticket.client_id", "=", "client.id")
+                ->when($status != "all", function ($query) use ($status) {
+                    return $query->where("status", $status);
+                })->where(function ($query) use ($q) {
+                    $query->orWhere('first_name', 'ILIKE', '%' . trim(strtolower($q)) . '%')
+                        ->orWhere('last_name', 'ILIKE', '%' . $q . '%')
+                        // ->orWhereRaw('concat(first_name, last_name)', 'ILIKE', '%' . $q . '%')
+                        ->orWhere('title', 'ILIKE', '%' . $q . '%')
+                        ->orWhere('description', 'ILIKE', '%' . $q . '%');
+                })->paginate($entries)->setPath('');
+
+            if (count($ticket) > 0)
+                return $ticket;
+        }
+        return  [];
     }
 
     /**

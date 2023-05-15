@@ -4,9 +4,11 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TicketsController;
 use App\Http\Controllers\UserController;
 use App\Models\Client;
+use App\Models\Ticket;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +33,10 @@ Route::get('/', function () {
 
 Auth::routes();
 
+Route::prefix("/home")->group(function () {
+    Route::get("", [TicketsController::class, "index"]);
+})->name("home");
+
 Route::prefix("/client")->group(function () {
     Route::post('', [ClientController::class, "store"]);
     Route::get('', [ClientController::class, 'index']);
@@ -51,7 +57,7 @@ Route::prefix("/comment")->group(function () {
 
 Route::prefix("/ticket")->group(function () {
     Route::post('', [TicketsController::class, "store"]);
-    Route::get('', [TicketsController::class, 'index']);
+    Route::any('', [TicketsController::class, 'index']);
     Route::get('{ticket_id}', [TicketsController::class, "show"]);
     Route::patch('{ticket_id}', [TicketsController::class, "update"]);
     Route::delete('{ticket_id}', [TicketsController::class, "destroy"]);
@@ -64,4 +70,4 @@ Route::prefix("/user")->group(function () {
 });
 
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+// Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
