@@ -8,12 +8,13 @@ use Illuminate\Database\Seeder;
 
 class DataBaseSeeder extends Seeder
 {
+    const NUMBER_OF_ENTRIES = 40;
     // @return void
     public function run()
     {
-        User::factory()->count(20)->create();
-        Client::factory()->count(20)->create();
-        Ticket::factory()->count(20)->create();
-        Comment::factory()->count(20)->create();
+        User::factory()->count(DataBaseSeeder::NUMBER_OF_ENTRIES)->create();
+        Client::factory()->count(DataBaseSeeder::NUMBER_OF_ENTRIES)->create();
+        Ticket::factory()->count(DataBaseSeeder::NUMBER_OF_ENTRIES)->create();
+        Comment::factory()->count(DataBaseSeeder::NUMBER_OF_ENTRIES)->create();
     }
 }

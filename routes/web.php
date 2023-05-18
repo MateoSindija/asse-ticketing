@@ -57,7 +57,7 @@ Route::prefix("/comment")->group(function () {
 
 Route::prefix("/ticket")->group(function () {
     Route::post('', [TicketsController::class, "store"]);
-    Route::any('', [TicketsController::class, 'index']);
+    Route::get('', [TicketsController::class, 'index']);
     Route::get('{ticket_id}', [TicketsController::class, "show"]);
     Route::patch('{ticket_id}', [TicketsController::class, "update"]);
     Route::delete('{ticket_id}', [TicketsController::class, "destroy"]);

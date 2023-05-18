@@ -35,3 +35,23 @@
         background: #bbbcbd;
     }
 }
+
+@mixin pagination-button() {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    padding: 10px;
+    border: 2px solid #e8e8e8;
+    border-radius: 4px;
+    background-color: white;
+
+    &:hover {
+        background-color: #e8e8e8;
+    }
+
+    &:disabled {
+        background-color: rgb(241, 239, 239);
+        pointer-events: none;
+    }
+}

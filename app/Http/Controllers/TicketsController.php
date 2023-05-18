@@ -9,6 +9,7 @@ use App\Models\Ticket;
 use Dotenv\Util\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -58,9 +59,11 @@ class TicketsController extends Controller
 
         $status = $request->input("status");
         $entries = $request->input("entries");
+        $search = $request->input("search");
 
-
-        $tickets = $request->input("search") ? $this->search($request->input("search"), $status, $entries) : $this->tickets($status, $entries);
+        $tickets = $search ?
+            $this->search($search, $status, $entries)
+            : $this->tickets($status, $entries);
 
         $number_of_tickets = Ticket::count();
         $number_of_completed_tickets = Ticket::where("status", "=", "Closed")->count();
@@ -88,37 +91,35 @@ class TicketsController extends Controller
         $query->whereHas("client");
         $query->whereHas("user");
 
-        $query->when($status, function ($query) use ($status) {
+        $query->when($status && $status != "all", function ($query) use ($status) {
             return $query->where("status", $status);
         });
 
-        $query->when($entries, function ($query) use ($entries) {
-            return $query->paginate($entries);
-        })->when(!$entries, function ($query) {
-            return $query->paginate(20);
-        });
 
-        return $query->get();
+        return $query->paginate($entries ? $entries : 20);
     }
 
-    private function search(string $q, string $status, string $entries)
+    private function search(string $q, string | null $status = "all", string | null $entries = "20")
     {
-        if ($q != "") {
-            $ticket = Ticket::join("client", "ticket.client_id", "=", "client.id")
-                ->when($status != "all", function ($query) use ($status) {
-                    return $query->where("status", $status);
-                })->where(function ($query) use ($q) {
-                    $query->orWhere('first_name', 'ILIKE', '%' . trim(strtolower($q)) . '%')
-                        ->orWhere('last_name', 'ILIKE', '%' . $q . '%')
-                        // ->orWhereRaw('concat(first_name, last_name)', 'ILIKE', '%' . $q . '%')
-                        ->orWhere('title', 'ILIKE', '%' . $q . '%')
-                        ->orWhere('description', 'ILIKE', '%' . $q . '%');
-                })->paginate($entries)->setPath('');
 
-            if (count($ticket) > 0)
-                return $ticket;
-        }
-        return  [];
+        //TODO fix pagination on search and concat columns
+        $ticket = Ticket::join("client", "ticket.client_id", "=", "client.id")
+            ->join("user", "ticket.user_id", "=", "user.id")
+            ->when($status != "all", function ($query) use ($status) {
+                return $query->where("status", $status);
+            })->where(function ($query) use ($q) {
+                $query->orWhere('user.first_name', 'ILIKE', '%' . $q . '%')
+                    ->orWhere('user.last_name', 'ILIKE', '%' . $q . '%')
+                    ->orWhere('client.first_name', 'ILIKE', '%' . $q . '%')
+                    ->orWhere('client.last_name', 'ILIKE', '%' . $q . '%')
+                    // ->whereRaw('CONCAT_WS(" ","user.first_name", "user.last_name") ILIKE ', $q)
+                    // ->orWhereRaw('concat(first_name, last_name)', 'ILIKE', '%' . $q . '%')
+                    ->orWhere('title', 'ILIKE', '%' . $q . '%')
+                    ->orWhere('description', 'ILIKE', '%' . $q . '%');
+            })->paginate($entries)->setPath('');
+
+
+        return  $ticket;
     }
 
     /**
