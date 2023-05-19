@@ -13,7 +13,8 @@
             const status = @json($status);
             const entries = @json($entries);
             const search = @json($search);
-            const currentPage = @json($tickets->currentPage())
+            const currentPage = @json($tickets->currentPage());
+            let addActive = "ticket";
 
             $('#open').on('click', () => {
 
@@ -31,6 +32,9 @@
             $('#closed').on('click', () => {
                 handleStatuChange("Closed")
             });
+            $('#mine').on('click', () => {
+                handleStatuChange("mine")
+            });
 
             $(".footer__pagination__pages__pageButton").on("click", (event) => {
                 const newPage = event.target.innerText;
@@ -45,6 +49,7 @@
                 })
             })
 
+
             $("#search").on("submit", (event) => {
                 event.preventDefault()
                 const value = document.getElementById("searchInput").value
@@ -56,6 +61,18 @@
                         $("#home").html(response)
                     }
                 })
+            })
+
+            $("#exit").on("click", (event) => {
+                $("#newModal").animate({
+                    width: 'toggle'
+                }, 350);
+            })
+
+            $("#new").on("click", () => {
+                $("#newModal").animate({
+                    width: 'toggle'
+                }, 350);
             })
 
             $("#entries").on("change", (event) => {
@@ -115,9 +132,9 @@
                 <form id="logout-form" action="{{ route('logout') }}" method="POST">
                     @csrf
                 </form>
-                <button class="header__buttons__addButton">
+                <button id="new" class="header__buttons__addButton">
                     <img src="/images/plus_icon.svg" alt="plus">
-                    Add new ticket
+                    Add new
                 </button>
             </div>
         </div>
@@ -177,6 +194,11 @@
                     'statusHeader__statusButtons__statusButton__highlight' =>
                         $status == 'Closed',
                 ])>Closed</button>
+
+                <button id="mine" @class([
+                    'statusHeader__statusButtons__statusButton',
+                    'statusHeader__statusButtons__statusButton__highlight' => $status == 'mine',
+                ])>My tickets</button>
             </div>
         </div>
         <form id="search">
@@ -196,7 +218,7 @@
             <div class="tickets__content__header">
                 <div class="tickets__content__header__name">Name</div>
                 <div class="tickets__content__header__user">Client</div>
-                <div class="tickets__content__header__agent">Assigne</div>
+                <div class="tickets__content__header__agent">Assigned To</div>
                 <div class="tickets__content__header__date">Created At</div>
                 <div class="tickets__content__header__status">Status</div>
                 <div class="tickets__content__header__action">Action</div>
@@ -272,6 +294,21 @@
                     </button>
                 </div>
             @endif
+        </div>
+        <div id="newModal" class="newModal">
+            <div class="newModal__header">
+                <div class="newModal__header__title">Add new</div>
+                <button class="newModal__header__exit" id="exit">
+                    <img src="/images/x-symbol.svg" alt="x">
+                </button>
+            </div>
+
+            <div class="newModal__selector">
+                <button class="newModal__selector__button">Ticket</button>
+                <button class="newModal__selector__button">User</button>
+            </div>
+
+
         </div>
     </div>
 </div>

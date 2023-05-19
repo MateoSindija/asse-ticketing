@@ -92,6 +92,10 @@ class TicketsController extends Controller
         $query->whereHas("user");
 
         $query->when($status && $status != "all", function ($query) use ($status) {
+            if ($status == "mine") {
+                $userID = Auth::id();
+                return $query->where("user_id", $userID);
+            }
             return $query->where("status", $status);
         });
 
@@ -102,10 +106,13 @@ class TicketsController extends Controller
     private function search(string $q, string | null $status = "all", string | null $entries = "20")
     {
 
-        //TODO fix pagination on search and concat columns
         $ticket = Ticket::join("client", "ticket.client_id", "=", "client.id")
             ->join("user", "ticket.user_id", "=", "user.id")
             ->when($status != "all", function ($query) use ($status) {
+                if ($status == "mine") {
+                    $userID = Auth::id();
+                    return $query->where("ticket.user_id", $userID);
+                }
                 return $query->where("status", $status);
             })->where(function ($query) use ($q) {
                 $query->orWhere('user.first_name', 'ILIKE', '%' . $q . '%')
