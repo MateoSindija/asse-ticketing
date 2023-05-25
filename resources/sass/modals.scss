@@ -114,7 +114,7 @@
         &__textarea {
             @include modal-input();
             margin-bottom: 10px;
-            height: 150px;
+            height: 100px;
             width: 100%;
         }
 
@@ -152,6 +152,20 @@
             }
             &__body {
                 margin-bottom: 10px;
+            }
+
+            &__delete {
+                background: white;
+                border-radius: 20px;
+                padding: 5px 10px;
+                display: block;
+                margin-left: auto;
+                color: red;
+                border: none;
+
+                &:hover {
+                    filter: brightness(0.9);
+                }
             }
 
             border-top: 2px solid $table-divider;

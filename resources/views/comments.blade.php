@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @php
+    $userID = Auth::id();
     $ticketID = Request::route('ticket_id');
     define('MINUTES_IN_MONTH', 43800);
     define('MINUTES_IN_DAY', 1440);
@@ -35,11 +36,39 @@
         $(document).ready(() => {
             const baseUrl = "http://127.0.0.1:8000/";
             const TOAST_DURATION = 2000;
+            const ticketID = @json($ticketID);
+
+
+            $(".bodyModal__comments__comment__delete").on("click", function() {
+                commentID = $(this).data('id');
+
+                $.ajax({
+                    type: "DELETE",
+                    url: baseUrl + `comment/${commentID}`,
+                    headers: {
+                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                    },
+                    success: function(response) {
+                        Toastify({
+                            text: "Comment deleted",
+                            duration: TOAST_DURATION,
+                            close: true,
+                            gravity: "top",
+                            position: "center",
+                            style: {
+                                background: "#50C996",
+                            },
+                        }).showToast();
+                        $("#commentBody").html(response)
+
+                    }
+                });
+            })
 
             $("#commentForm").on("submit", (event) => {
                 event.preventDefault();
                 const comment = $("#commentText").val();
-                const ticketID = @json($ticketID);
+
                 $.ajax({
                     type: "POST",
                     url: baseUrl + 'comment',
@@ -66,6 +95,7 @@
                     }
                 });
             })
+
         })
     </script>
 @endpush
@@ -89,6 +119,10 @@
                             {{ checkIfEdited($comment->created_at, $comment->updated_at) }}</div>
                     </div>
                     <div class="bodyModal__comments__comment__body">{{ $comment->comment }}</div>
+                    @if ($userID == $comment->user_id)
+                        <button type="button" class="bodyModal__comments__comment__delete"
+                            data-id="{{ $comment->comment_id }}">Delete</button>
+                    @endif
                 </div>
             @endforeach
         </div>

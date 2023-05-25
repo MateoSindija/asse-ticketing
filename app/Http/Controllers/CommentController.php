@@ -61,6 +61,8 @@ class CommentController extends Controller
         $comments = Comment::where("ticket_id", $ticket_id)
             ->join("user", "comment.user_id", "=", "user.id")
             ->select(
+                "user.id as user_id",
+                "comment.id as comment_id",
                 "comment.ticket_id",
                 "user.first_name",
                 "user.last_name",
@@ -143,9 +145,12 @@ class CommentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request)
     {
-        Comment::destroy($id);
-        return redirect("/home")->with("status", "Deleted successfully");
+        $comment = Comment::where("id", $request->comment_id)->select("ticket_id")->first();
+        Comment::destroy($request->comment_id);
+        $comments = $this->getComments($comment->ticket_id);
+
+        return view("comments", ["comments" => $comments]);
     }
 }
