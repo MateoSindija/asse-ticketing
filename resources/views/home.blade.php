@@ -15,6 +15,7 @@
             const search = @json($search);
             const currentPage = @json($tickets->currentPage());
             let addActive = "ticket";
+            let ticketID = ""
 
             $('#open').on('click', () => {
 
@@ -63,16 +64,33 @@
                 })
             })
 
-            $("#exit").on("click", (event) => {
+            $("#exitAdd").on("click", (event) => {
                 $("#newModal").animate({
                     width: 'toggle'
-                }, 350);
+                }, 350, () => {
+                    addClassToSelector(true)
+                    $("#body").empty()
+                });
+
             })
+
+
 
             $("#new").on("click", () => {
                 $("#newModal").animate({
                     width: 'toggle'
-                }, 350);
+                }, 350, () => {
+
+                    addClassToSelector(true)
+                    $.ajax({
+                        type: "GET",
+                        url: baseUrl + `ticket/create`,
+                        success: function(response) {
+                            $("#body").html(response)
+                        }
+                    })
+                });
+
             })
 
             $("#entries").on("change", (event) => {
@@ -88,12 +106,66 @@
                 });
             })
 
+            $("#userSelector").on("click", () => {
+                addClassToSelector(false)
+                $("#body").empty()
+                $.ajax({
+                    type: "GET",
+                    url: baseUrl + `client/create`,
+                    success: function(response) {
+                        $("#body").html(response)
+                    }
+                })
+            })
+
+
+            $("#ticketSelector").on("click", () => {
+                addClassToSelector(true)
+                $("#body").empty()
+                $.ajax({
+                    type: "GET",
+                    url: baseUrl + `ticket/create`,
+                    success: function(response) {
+                        $("#body").html(response)
+                    }
+                })
+            })
+
             $("#nextPage").on("click", (event) => {
                 loadPage(currentPage + 1)
             })
             $("#prevPage").on("click", (event) => {
                 loadPage(currentPage - 1)
             })
+
+            $(".tickets__content__row__actions__button").on("click", function(event) {
+                ticketID = $(this).data('id')
+                $.ajax({
+                    type: "GET",
+                    url: baseUrl +
+                        `ticket/${ticketID}`,
+                    success: function(response) {
+                        $("#ticketInfoModal").html(response).children().animate({
+                            width: 'toggle'
+                        }, 350, )
+                    }
+                });
+            })
+
+
+
+
+
+            const addClassToSelector = (isTicketActive) => {
+                if (isTicketActive) {
+                    $("#ticketSelector").addClass("newModal__selector__button--highlight")
+                    $("#userSelector").removeClass("newModal__selector__button--highlight")
+                } else {
+                    $("#ticketSelector").removeClass("newModal__selector__button--highlight")
+                    $("#userSelector").addClass("newModal__selector__button--highlight")
+                }
+
+            }
 
             const loadPage = (newPageIndex) => {
                 $.ajax({
@@ -218,7 +290,7 @@
             <div class="tickets__content__header">
                 <div class="tickets__content__header__name">Name</div>
                 <div class="tickets__content__header__user">Client</div>
-                <div class="tickets__content__header__agent">Assigned To</div>
+                <div class="tickets__content__header__agent">Assigne</div>
                 <div class="tickets__content__header__date">Created At</div>
                 <div class="tickets__content__header__status">Status</div>
                 <div class="tickets__content__header__action">Action</div>
@@ -248,7 +320,7 @@
                         </div>
                     </div>
                     <div class="tickets__content__row__actions">
-                        <button class="tickets__content__row__actions__button">
+                        <button data-id="{{ $ticket->id }}" class="tickets__content__row__actions__button">
                             Details
                             <img src="/images/double_arrow_right.svg" width="12" height="12"
                                 alt="double_arrow_right">
@@ -298,17 +370,32 @@
         <div id="newModal" class="newModal">
             <div class="newModal__header">
                 <div class="newModal__header__title">Add new</div>
-                <button class="newModal__header__exit" id="exit">
+                <button class="newModal__header__exit" id="exitAdd">
                     <img src="/images/x-symbol.svg" alt="x">
                 </button>
             </div>
 
             <div class="newModal__selector">
-                <button class="newModal__selector__button">Ticket</button>
-                <button class="newModal__selector__button">User</button>
+                <button id="ticketSelector" class="newModal__selector__button">Ticket</button>
+                <button id="userSelector" class="newModal__selector__button">Client</button>
+            </div>
+            <div id="body"></div>
+        </div>
+        {{-- <div id="detailsModal" class="newModal">
+            <div class="newModal__header">
+                <div class="newModal__header__title">Ticket</div>
+                <button class="newModal__header__exit" id="exitDetails">
+                    <img src="/images/x-symbol.svg" alt="x">
+                </button>
             </div>
 
-
-        </div>
+            <div class="newModal__selector">
+                <button id="ticketSelectorDetails" class="newModal__selector__button">Details</button>
+                <button id="editSelectorDetails" class="newModal__selector__button">Edit</button>
+                <button id="commentsSelectorDetails" class="newModal__selector__button">Comments</button>
+            </div>
+            <div id="bodyDetail"></div>
+        </div> --}}
+        <div id="ticketInfoModal"></div>
     </div>
 </div>

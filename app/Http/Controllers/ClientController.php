@@ -46,13 +46,31 @@ class ClientController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
+    {
+        $search = $request->input("search");
+        $clients = $search ? $this->search($search) : Client::all();
+
+
+        return $clients->toJson();
+    }
+
+    private function search(string | null $q)
     {
 
-        $clients = Client::all()->toJson();
-        $clients = json_decode($clients);
+        if ($q == "") {
+            return [];
+        }
 
-        return $clients;
+        $clients = Client::where(function ($query) use ($q) {
+            $query->orWhere('first_name', 'ILIKE', '%' . $q . '%')
+                ->orWhere('last_name', 'ILIKE', '%' . $q . '%')
+                ->orWhere('email', 'ILIKE', '%' . $q . '%')
+                ->orWhere('phone', 'ILIKE', '%' . $q . '%')
+                ->orWhereRaw('CONCAT("client"."first_name",' . "' '" . ', "client"."last_name") ILIKE ' . "'%$q%'");
+        });
+
+        return $clients->get();
     }
 
     /**
@@ -61,7 +79,8 @@ class ClientController extends Controller
      */
     public function create()
     {
-        //
+
+        return view("clientAdd");
     }
 
     /**
@@ -73,7 +92,7 @@ class ClientController extends Controller
     {
         $validator = $this->validator($request->all());
         if ($validator->fails()) {
-            return response($validator->errors()->first());
+            return response($validator->errors()->first(), 403);
         }
 
         $client = new Client();
@@ -84,8 +103,7 @@ class ClientController extends Controller
         $client->email = $request->email;
         $client->save();
 
-        // return view("home", ["newClient" => $client]);
-        return $client;
+        return response('Client successfully added', 200);
     }
 
     /**

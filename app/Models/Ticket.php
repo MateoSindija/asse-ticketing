@@ -32,4 +32,11 @@ class Ticket extends Model
     {
         return $this->hasMany(Comment::class);
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Ticket $ticket) {
+            $ticket->comment()->delete();
+        });
+    }
 }

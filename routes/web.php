@@ -40,6 +40,7 @@ Route::prefix("/home")->group(function () {
 Route::prefix("/client")->group(function () {
     Route::post('', [ClientController::class, "store"]);
     Route::get('', [ClientController::class, 'index']);
+    Route::get('/create', [ClientController::class, 'create']);
     Route::get('{client_id}', [ClientController::class, "show"]);
     Route::patch('{client_id}', [ClientController::class, "update"]);
     Route::delete('{client_id}', [ClientController::class, "destroy"]);
@@ -58,9 +59,11 @@ Route::prefix("/comment")->group(function () {
 Route::prefix("/ticket")->group(function () {
     Route::post('', [TicketsController::class, "store"]);
     Route::get('', [TicketsController::class, 'index']);
+    Route::get('/create', [TicketsController::class, 'create']);
     Route::get('{ticket_id}', [TicketsController::class, "show"]);
-    Route::patch('{ticket_id}', [TicketsController::class, "update"]);
-    Route::delete('{ticket_id}', [TicketsController::class, "destroy"]);
+    Route::get('{ticket_id}/edit', [TicketsController::class, "edit"]);
+    Route::patch('/{ticket_id}', [TicketsController::class, "update"]);
+    Route::delete('/{ticket_id}', [TicketsController::class, "destroy"]);
 });
 
 Route::prefix("/user")->group(function () {

@@ -1,0 +1,183 @@
+@import "mixins";
+@import "_variables";
+
+.bodyModal {
+    padding: 10px 20px;
+    margin-bottom: 0 !important;
+
+    &__text {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+
+        &__label {
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+        &__input {
+            @include modal-input();
+        }
+
+        &__select {
+            height: 40px;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 4px;
+            padding: 8px;
+            border: 1px solid $input-border;
+            &:focus {
+                outline: 1px solid #9a9999;
+            }
+
+            &__option {
+                border: 2px solid black;
+            }
+        }
+    }
+
+    &__search {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+        position: relative;
+        &__select {
+            @include modal-input();
+        }
+
+        &__label {
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        &__dropDown {
+            position: absolute;
+            left: 0;
+            top: 100%;
+            max-height: 200px;
+            width: 100%;
+            overflow-y: scroll;
+            @include scroll-bar();
+            display: flex;
+            flex-direction: column;
+            border: 2px solid $table-divider;
+            box-shadow: 10px 10px 15px -8px rgba(0, 0, 0, 0.1);
+            z-index: 2;
+
+            &__button {
+                width: 100%;
+                background-color: white;
+                border: none;
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                padding: 5px 3px;
+
+                &__name {
+                    text-align: left;
+                    width: 50%;
+                    margin-right: 5px;
+                }
+
+                &__email {
+                    text-align: left;
+                    width: 50%;
+                    overflow: hidden;
+                    white-space: normal;
+                    text-overflow: ellipsis;
+                    color: $grey-inactive;
+                }
+
+                &:hover {
+                    filter: brightness(0.9);
+                }
+            }
+        }
+    }
+
+    &__buttons {
+        display: flex;
+        flex-direction: row;
+
+        &__add {
+            @include new-ticket-btn();
+        }
+        &__delete {
+            margin-left: 20px;
+            @include new-ticket-btn();
+            background-color: red;
+        }
+    }
+
+    &__commentAdd {
+        margin-bottom: 10px;
+
+        &__textarea {
+            @include modal-input();
+            margin-bottom: 10px;
+            height: 150px;
+            width: 100%;
+        }
+
+        &__submit {
+            margin-left: auto;
+            @include new-ticket-btn();
+            margin-bottom: 10px;
+        }
+    }
+
+    &__comments {
+        overflow-y: scroll;
+        @include scroll-bar();
+        height: 400px;
+
+        &__comment {
+            &__header {
+                display: flex;
+                flex-direction: row;
+                margin: 10px 0;
+
+                &__name {
+                    font-weight: 700;
+                    margin-right: 10px;
+                }
+
+                &__separator {
+                    margin-right: 10px;
+                    color: $input-border;
+                }
+
+                &__date {
+                    color: $input-border;
+                }
+            }
+            &__body {
+                margin-bottom: 10px;
+            }
+
+            border-top: 2px solid $table-divider;
+        }
+    }
+
+    &__details {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+
+        &__info {
+            display: flex;
+            margin-bottom: 10px;
+
+            &__title {
+                margin-right: 15px;
+                font-size: 15px;
+                font-weight: 700;
+            }
+        }
+    }
+    &__description {
+        margin-bottom: 5px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+}

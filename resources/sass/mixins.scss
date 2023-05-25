@@ -55,3 +55,12 @@
         pointer-events: none;
     }
 }
+
+@mixin modal-input() {
+    border-radius: 4px;
+    padding: 8px;
+    border: 1px solid $input-border;
+    &:focus {
+        outline: 1px solid #9a9999;
+    }
+}

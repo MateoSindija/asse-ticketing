@@ -25,11 +25,13 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::all();
 
-        return view("home", compact("users", $users));
+        $search = $request->input("search");
+        $users = $search ? $this->search($search) : User::all();
+
+        return $users->toJson();
     }
 
     /**
@@ -52,6 +54,27 @@ class UserController extends Controller
         return $user;
     }
 
+    private function search(string | null $q)
+    {
+
+        if ($q == "") {
+            return [];
+        }
+
+        $users = User::where(function ($query) use ($q) {
+            $query->orWhere('first_name', 'ILIKE', '%' . $q . '%')
+                ->orWhere('last_name', 'ILIKE', '%' . $q . '%')
+                ->orWhere('email', 'ILIKE', '%' . $q . '%')
+                ->orWhereRaw('CONCAT("user"."first_name",' . "' '" . ', "user"."last_name") ILIKE ' . "'%$q%'");
+        });
+
+
+
+
+        return $users->get();
+    }
+
+
     /**
      * Show the form for editing the specified resource.
      */
@@ -71,14 +94,14 @@ class UserController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response($validator->errors()->first());
+            return response($validator->errors()->first(), 403);
         }
 
         //check if mail is taken
         $count = User::where("email", "=", $request->email)->where("id", "<>", $id)->count();
 
         if ($count >= 1) {
-            return response("Mail taken",  409);
+            return response("Mail taken",  403);
         }
 
         User::where("id", $id)

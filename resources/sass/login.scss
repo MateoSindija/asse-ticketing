@@ -50,7 +50,7 @@
                     &__input {
                         border-radius: 4px;
                         padding: 8px 38px 8px 8px;
-                        border: 1px solid #b7b6b6;
+                        border: 1px solid $input-border;
                         width: 100% !important;
 
                         &--error {

@@ -51,12 +51,27 @@ class CommentController extends Controller
      */
     public function index(string $ticket_id)
     {
-        $comments = Comment::where("ticket_id", $ticket_id)->get();
+        $comments = $this->getComments($ticket_id);
 
+        return view("comments", ["comments" => $comments]);
+    }
+
+    private function getComments(string $ticket_id)
+    {
+        $comments = Comment::where("ticket_id", $ticket_id)
+            ->join("user", "comment.user_id", "=", "user.id")
+            ->select(
+                "comment.ticket_id",
+                "user.first_name",
+                "user.last_name",
+                "comment.created_at",
+                "comment.updated_at",
+                "comment.comment"
+            )
+            ->get();
 
         return $comments;
     }
-
     /**
      * Show the form for creating a new resource.
      */
@@ -72,19 +87,20 @@ class CommentController extends Controller
     {
         $validator = $this->validate_create($request->all());
         if ($validator->fails()) {
-            return response($validator->errors()->first());
+            return response($validator->errors()->first(), 403);
         }
 
 
 
         $comment = new Comment();
-        $comment->comment = $request->comment;
-        $comment->ticket_id = $request->ticket_id;
+        $comment->comment = $request->input("comment");
+        $comment->ticket_id = $request->input("ticket_id");
         $comment->user_id = Auth::id();
         $comment->save();
 
-        // return view("home", ["newComment" => $comment]);
-        return $comment;
+        $comments = $this->getComments($request->ticket_id);
+
+        return view("comments", ["comments" => $comments]);
     }
 
     /**
@@ -114,7 +130,7 @@ class CommentController extends Controller
 
         $validator = $this->validate_update($request->all());
         if ($validator->fails()) {
-            return response($validator->errors()->first());
+            return response($validator->errors()->first(), 403);
         }
 
 
