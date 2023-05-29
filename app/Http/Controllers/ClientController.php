@@ -14,8 +14,6 @@ use Ramsey\Uuid\Uuid;
 
 class ClientController extends Controller
 {
-
-
     /**
      * Create a new controller instance.
      *
@@ -24,23 +22,6 @@ class ClientController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-    }
-
-    /**
-     * Get a validator for an incoming registration request.
-     *
-     * @param  array  $data
-     * @return \Illuminate\Contracts\Validation\Validator
-     */
-    private function validator(array $data)
-    {
-
-        return  Validator::make($data, [
-            'first_name' => ['required', 'string', 'max:50'],
-            'last_name' => ['required', 'string', 'max:50'],
-            'phone' => ['required', 'string', 'max:20', 'unique:client,phone'],
-            'email' => ['required', 'email:rfc,dns', 'unique:client,email', 'max:255']
-        ]);
     }
 
     /**
@@ -88,20 +69,10 @@ class ClientController extends Controller
      *  @param Request $request
      *
      */
-    public function store(Request $request)
+    public function store(StoreClientsRequest $request)
     {
-        $validator = $this->validator($request->all());
-        if ($validator->fails()) {
-            return response($validator->errors()->first(), 403);
-        }
 
-        $client = new Client();
-
-        $client->first_name = $request->first_name;
-        $client->last_name = $request->last_name;
-        $client->phone = $request->phone;
-        $client->email = $request->email;
-        $client->save();
+        Client::query()->create($request->all());
 
         return response('Client successfully added', 200);
     }
@@ -130,17 +101,12 @@ class ClientController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(StoreClientsRequest $request, string $id)
     {
-        $validator = $this->validator($request->all());
-        if ($validator->fails()) {
-            return response($validator->errors()->first());
-        }
-
 
 
         Client::where("id", $id)
-            ->update(["first_name" => $request->first_name, "last_name" => $request->last_name, "phone" => $request->phone, "email" => $request->email]);
+            ->update($request->all());
 
         return response("Updated successfully", 200);
     }

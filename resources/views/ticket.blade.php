@@ -51,18 +51,16 @@
                         refetchBody("Ticket added");
                     },
                     error: function(response) {
-                        if (response.status === 403) {
-                            Toastify({
-                                text: response.responseText,
-                                duration: TOAST_DURATION,
-                                close: true,
-                                gravity: "top",
-                                position: "center",
-                                style: {
-                                    background: "lightcoral",
-                                },
-                            }).showToast();
-                        }
+                        Toastify({
+                            text: response.responseJSON.message,
+                            duration: TOAST_DURATION,
+                            close: true,
+                            gravity: "top",
+                            position: "center",
+                            style: {
+                                background: "lightcoral",
+                            },
+                        }).showToast();
                     }
                 })
             })
@@ -237,7 +235,10 @@
         <select id="status" class="bodyModal__text__select">
             <option value="Open" @if (isset($ticket) && $ticket->status == 'Open') selected @endif>Open</option>
             <option value="In progress" @if (isset($ticket) && $ticket->status == 'In progress') selected @endif>In progress</option>
-            <option value="Closed" @if (isset($ticket) && $ticket->status == 'Closed') selected @endif>Closed</option>
+            @if (isset($isEdit))
+                <option value="Closed" @if (isset($ticket) && $ticket->status == 'Closed') selected @endif>Closed</option>
+            @endif
+
         </select>
     </div>
     <div class="bodyModal__text">

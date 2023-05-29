@@ -11,7 +11,7 @@ class StoreClientsRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,27 @@ class StoreClientsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'first_name' => ['required', 'string', 'max:50'],
+            'last_name' => ['required', 'string', 'max:50'],
+            'phone' => ['required', 'string', 'max:20', 'unique:client,phone'],
+            'email' => ['required', 'email:rfc,dns', 'unique:client,email', 'max:255']
+        ];
+    }
+
+    /**
+     * Custom message for validation
+     *
+     * @return array
+     */
+    public function messages()
+    {
+        return [
+            'first_name.required' => 'First name is required!',
+            'last_name.required' => 'Last name is required!',
+            'phone.required' => 'Phone is required!',
+            'phone.unique' => 'Phone is already taken!',
+            'email.required' => 'Email is required!',
+            'email.unique' => 'Email is already taken!',
         ];
     }
 }

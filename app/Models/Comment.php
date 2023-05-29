@@ -14,7 +14,7 @@ class Comment extends Model
 
     protected $table = 'comment';
     protected $primaryKey = "id";
-    protected $fillable = ["comment"];
+    protected $fillable = ["comment", "ticket_id", "user_id"];
 
 
     public function user(): BelongsTo

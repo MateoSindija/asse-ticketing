@@ -92,7 +92,19 @@
                         }).showToast();
                         $("#commentBody").html(response)
 
-                    }
+                    },
+                    error: function(response) {
+                        Toastify({
+                            text: response.responseJSON.message,
+                            duration: TOAST_DURATION,
+                            close: true,
+                            gravity: "top",
+                            position: "center",
+                            style: {
+                                background: "lightcoral",
+                            },
+                        }).showToast();
+                    },
                 });
             })
 

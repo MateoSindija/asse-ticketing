@@ -51,18 +51,16 @@
                         $(":input", "#ticketForm").val("")
                     },
                     error: function(response) {
-                        if (response.status === 403) {
-                            Toastify({
-                                text: response.responseText,
-                                duration: TOAST_DURATION,
-                                close: true,
-                                gravity: "top",
-                                position: "center",
-                                style: {
-                                    background: "lightcoral",
-                                },
-                            }).showToast();
-                        }
+                        Toastify({
+                            text: response.responseJSON.message,
+                            duration: TOAST_DURATION,
+                            close: true,
+                            gravity: "top",
+                            position: "center",
+                            style: {
+                                background: "lightcoral",
+                            },
+                        }).showToast();
                     },
                 });
             });

@@ -23,17 +23,7 @@ class CommentController extends Controller
     {
         $this->middleware('auth');
     }
-    /** 
-     * @param  array  $data
-     * @return \Illuminate\Contracts\Validation\Validator
-     */
-    private function validate_create(array $data)
-    {
-        return Validator::make($data, [
-            'comment' => ['required', 'string', 'max:300'],
-            'ticket_id' => ['required', 'uuid', 'exists:ticket,id'],
-        ]);
-    }
+
     /** 
      * @param  array  $data
      * @return \Illuminate\Contracts\Validation\Validator
@@ -75,30 +65,12 @@ class CommentController extends Controller
         return $comments;
     }
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreCommentsRequest $request)
     {
-        $validator = $this->validate_create($request->all());
-        if ($validator->fails()) {
-            return response($validator->errors()->first(), 403);
-        }
 
-
-
-        $comment = new Comment();
-        $comment->comment = $request->input("comment");
-        $comment->ticket_id = $request->input("ticket_id");
-        $comment->user_id = Auth::id();
-        $comment->save();
+        Comment::query()->create($request->all() + ["user_id" => Auth::id()]);
 
         $comments = $this->getComments($request->ticket_id);
 
@@ -127,7 +99,7 @@ class CommentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(StoreCommentsRequest $request, string $id)
     {
 
         $validator = $this->validate_update($request->all());

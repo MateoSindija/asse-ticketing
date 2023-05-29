@@ -16,7 +16,7 @@ class Ticket extends Model
 
     protected $table = 'ticket';
     protected $primaryKey = "id";
-    protected $fillable = ["status", "title", "description"];
+    protected $fillable = ["status", "title", "description", "user_id", "client_id"];
 
     public function client(): BelongsTo
     {

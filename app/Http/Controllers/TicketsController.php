@@ -13,6 +13,7 @@ use Dotenv\Util\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -27,21 +28,6 @@ class TicketsController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-    }
-
-    /**
-     * @param array $data
-     * @return \Illuminate\Contracts\Validation\Validator
-     */
-    private function validate_create($data)
-    {
-        return Validator::make($data, [
-            'client_id' => ['required', 'uuid', 'exists:client,id'],
-            'user_id' => ['required', 'uuid', 'exists:user,id'],
-            'status' => ['required', 'string', 'max:20', Rule::in(["Open", "In progress", "Closed"])],
-            'title' => ['required', 'string', 'max:100'],
-            'description' => ['required', 'string', 'max:1000'],
-        ]);
     }
 
     /**
@@ -134,7 +120,7 @@ class TicketsController extends Controller
         $users = User::all();
         $clients = Client::all();
 
-        return view("ticketAdd", ["users" => $users, "clients" => $clients]);
+        return view("ticket", ["users" => $users, "clients" => $clients]);
     }
 
 
@@ -142,20 +128,11 @@ class TicketsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreTicketsRequest $request)
     {
-        $validator = $this->validate_create($request->all());
-        if ($validator->fails()) {
-            return response($validator->errors()->first(), 403);
-        }
 
-        $ticket = new Ticket();
-        $ticket->client_id = $request->client_id;
-        $ticket->user_id = $request->user_id;
-        $ticket->status = $request->status;
-        $ticket->title = $request->title;
-        $ticket->description = $request->description;
-        $ticket->save();
+
+        Ticket::query()->create($request->all());
 
         return response('Client successfully added', 200);
     }
@@ -211,7 +188,7 @@ class TicketsController extends Controller
         $current_user = Ticket::where("ticket.id", $id)->join("user", "ticket.user_id", "=", "user.id")->first();
         $current_client = Ticket::where("ticket.id", $id)->join("client", "ticket.client_id", "=", "client.id")->first();
 
-        return view("ticketAdd", [
+        return view("ticket", [
             "isEdit" => true,
             "current_client" => $current_client,
             "current_user" => $current_user,
@@ -224,24 +201,14 @@ class TicketsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateTicketsRequest $request, string $id)
     {
-        $validator = $this->validate_create($request->all());
-        if ($validator->fails()) {
-            return response($validator->errors()->first(), 403);
-        }
 
         $tickets = $this->tickets("all", "20");
 
 
         Ticket::where("id", $id)
-            ->update([
-                "client_id" => $request->client_id,
-                "user_id" => $request->user_id,
-                "title" => $request->title,
-                "description" => $request->description,
-                "status" => $request->status
-            ]);
+            ->update($request->all());
 
 
         return view("home", array_merge(["tickets" => $tickets], $this->getHomeData()));

@@ -11,7 +11,7 @@ class StoreCommentsRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,20 @@ class StoreCommentsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'comment' => ['required', 'string', 'max:300']
+        ];
+    }
+
+    /**
+     * Custom message for validation
+     *
+     * @return array
+     */
+    public function messages()
+    {
+        return [
+            'comment.required' => 'Comment is required!',
+            'comment.max' => "Max 300 characters are allowed"
         ];
     }
 }

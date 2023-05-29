@@ -34,14 +34,6 @@ class UserController extends Controller
         return $users->toJson();
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
 
     /**
      * Display the specified resource.
@@ -85,17 +77,9 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateUserRequest $request, string $id)
     {
-        $validator = Validator::make($request->all(), [
-            'first_name' => ['required', 'string', 'max:50'],
-            'last_name' => ['required', 'string', 'max:50'],
-            'email' => ['required', 'email:rfc,dns', 'max:255']
-        ]);
 
-        if ($validator->fails()) {
-            return response($validator->errors()->first(), 403);
-        }
 
         //check if mail is taken
         $count = User::where("email", "=", $request->email)->where("id", "<>", $id)->count();
