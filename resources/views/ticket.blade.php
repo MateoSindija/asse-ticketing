@@ -244,7 +244,7 @@
     <div class="bodyModal__text">
         <label for="desc" class="bodyModal__text__label">Description</label>
         <textarea required id="desc" cols="20" rows="10" class="bodyModal__text__input"
-            placeholder="Description of a problem">{{ isset($ticket) ? $ticket->description : '' }}
+            placeholder="Description of a problem">{{ isset($ticket) ? $ticket->description : null }}
         </textarea>
     </div>
     <div class="bodyModal__buttons">

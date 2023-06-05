@@ -1,3 +1,7 @@
+@function is-important($important) {
+    @return #{if($important, "!important", "")};
+}
+
 @mixin new-ticket-btn() {
     background-color: $blue-color;
     border: none;
@@ -36,23 +40,23 @@
     }
 }
 
-@mixin pagination-button() {
-    display: flex;
-    justify-content: center;
-    align-content: center;
-    flex-wrap: wrap;
-    padding: 10px;
-    border: 2px solid #e8e8e8;
-    border-radius: 4px;
-    background-color: white;
+@mixin pagination-button($important: false) {
+    display: flex is-important($important);
+    justify-content: center is-important($important);
+    align-content: center is-important($important);
+    flex-wrap: wrap is-important($important);
+    padding: 10px is-important($important);
+    border: 2px solid #e8e8e8 is-important($important);
+    border-radius: 4px is-important($important);
+    background-color: white is-important($important);
 
     &:hover {
-        background-color: #e8e8e8;
+        background-color: #e8e8e8 is-important($important);
     }
 
     &:disabled {
-        background-color: rgb(241, 239, 239);
-        pointer-events: none;
+        background-color: rgb(241, 239, 239) is-important($important);
+        pointer-events: none is-important($important);
     }
 }
 
@@ -62,5 +66,16 @@
     border: 1px solid $input-border;
     &:focus {
         outline: 1px solid #9a9999;
+    }
+}
+
+@mixin comment-button($text-color: blue) {
+    border-radius: 20px;
+    padding: 5px 10px;
+    color: $text-color;
+    border: none;
+    background: white;
+    &:hover {
+        filter: brightness(0.9);
     }
 }

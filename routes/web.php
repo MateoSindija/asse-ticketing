@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\ReplyController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TicketsController;
 use App\Http\Controllers\UserController;
@@ -52,8 +53,16 @@ Route::prefix("/comment")->group(function () {
     //get all comments on ticket
     Route::get('ticket/{ticket_id}', [CommentController::class, 'index']);
     Route::get('{comment_id}', [CommentController::class, "show"]);
+    Route::get('{comment_id}/edit', [CommentController::class, "edit"]);
     Route::patch('{comment_id}', [CommentController::class, "update"]);
     Route::delete('{comment_id}', [CommentController::class, "destroy"]);
+});
+
+Route::prefix("/reply")->group(function () {
+    Route::post('', [ReplyController::class, "store"]);
+    Route::delete('{comment_id}/{reply_id}', [ReplyController::class, "destroy"]);
+    Route::patch('{reply_id}', [ReplyController::class, "update"]);
+    Route::get('{reply_id}/edit', [ReplyController::class, "edit"]);
 });
 
 Route::prefix("/ticket")->group(function () {

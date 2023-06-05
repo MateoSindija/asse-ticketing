@@ -1,6 +1,5 @@
 @extends('layouts.app')
 @php
-    
     $status = Request::get('status') ? Request::get('status') : 'all';
     $entries = $tickets->perPage();
     $search = Request::get('search') ? Request::get('search') : '';
@@ -14,11 +13,12 @@
             const entries = @json($entries);
             const search = @json($search);
             const currentPage = @json($tickets->currentPage());
+            let dateFilterStart = @json($date_filter_start->format('Y-m-d'));
+            let dateFilterEnd = @json($date_filter_end->format('Y-m-d'));
             let addActive = "ticket";
-            let ticketID = ""
+            let ticketID = "";
 
             $('#open').on('click', () => {
-
                 handleStatuChange("Open")
             });
 
@@ -43,7 +43,7 @@
                 $.ajax({
                     type: "GET",
                     url: baseUrl +
-                        `ticket?entries=${entries}&status=${status}${search.length ? "&search=" + search : ""}&page=${newPage}`,
+                        `ticket?entries=${entries}&status=${status}${search.length ? "&search=" + search : ""}&page=${newPage}${addDateFilter()}`,
                     success: function(response) {
                         $("#home").html(response)
                     }
@@ -57,7 +57,8 @@
 
                 $.ajax({
                     type: "GET",
-                    url: baseUrl + `ticket?entries=${entries}&status=${status}&search=${value}`,
+                    url: baseUrl +
+                        `ticket?entries=${entries}&status=${status}&search=${value}${addDateFilter()}`,
                     success: function(response) {
                         $("#home").html(response)
                     }
@@ -99,7 +100,7 @@
                 $.ajax({
                     type: "GET",
                     url: baseUrl +
-                        `ticket?entries=${value}&status=${status}${search.length ? "&search=" + search : ""}`,
+                        `ticket?entries=${value}&status=${status}${search.length ? "&search=" + search : ""}${addDateFilter()}`,
                     success: function(response) {
                         $("#home").html(response)
                     }
@@ -152,8 +153,64 @@
                 });
             })
 
+            $("#home").on("click", (e) => {
+                if (!$(e.target).parents(".filters__calendar__popup").length && !$(e.target).parents(
+                        ".filters__calendar").length) {
+                    $("#calendar").empty()
+                }
+            });
 
+            $(".filters__calendar__button").on("click", () => {
+                let calendarEl = document.getElementById('calendar');
+                const endDate = new Date(@json($latest_ticket_date));
+                const startDate = new Date(@json($oldest_ticket_date));
+                let calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    selectable: true,
+                    customButtons: {
+                        defaultRange: {
+                            text: 'Default',
+                            click: () => {
+                                $.ajax({
+                                    type: "GET",
+                                    url: baseUrl +
+                                        `ticket?entries=${entries}&status=${status}${search.length ? "&search=" + search : ""}&startDate=${@json($oldest_ticket_date->format('Y-m-d'))}&endDate=${@json($latest_ticket_date->format('Y-m-d'))}`,
+                                    success: function(response) {
+                                        $("#home").html(response)
+                                    }
+                                });
+                            }
+                        }
+                    },
+                    headerToolbar: {
+                        start: 'title',
+                        end: 'defaultRange,prev,next',
+                    },
+                    events: [{
+                        titlle: "selected",
+                        start: dateFilterStart,
+                        end: dateFilterEnd
+                    }],
+                    validRange: {
+                        end: endDate,
+                        start: startDate
+                    },
+                    select: (info) => {
+                        dateFilterEnd = info.endStr;
+                        dateFilterStart = info.startStr;
+                        $.ajax({
+                            type: "GET",
+                            url: baseUrl +
+                                `ticket?entries=${entries}&status=${status}${search.length ? "&search=" + search : ""}${addDateFilter()}`,
+                            success: function(response) {
+                                $("#home").html(response)
+                            }
+                        });
+                    }
 
+                });
+                calendar.render();
+            })
 
 
             const addClassToSelector = (isTicketActive) => {
@@ -171,7 +228,7 @@
                 $.ajax({
                     type: "GET",
                     url: baseUrl +
-                        `ticket?entries=${entries}&status=${status}${search.length ? "&search=" + search : ""}&page=${newPageIndex}`,
+                        `ticket?entries=${entries}&status=${status}${search.length ? "&search=" + search : ""}&page=${newPageIndex}${addDateFilter()}`,
                     success: function(response) {
                         $("#home").html(response)
                     }
@@ -186,6 +243,15 @@
                         $("#home").html(response)
                     }
                 });
+            }
+
+
+            const addDateFilter = () => {
+                if (dateFilterEnd != @json($latest_ticket_date->format('Y-m-d')) || dateFilterStart !=
+                    @json($oldest_ticket_date->format('Y-m-d'))) {
+                    return `&startDate=${dateFilterStart}&endDate=${dateFilterEnd}`;
+                }
+                return "";
             }
         });
     </script>
@@ -284,6 +350,18 @@
                     <input id="searchInput" value="{{ $search }}" type="text" name="search"
                         class="filters__search__input" placeholder="Search">
                 </div>
+
+                <div class="filters__calendar">
+                    <button type="button" class="filters__calendar__button">
+                        <img src="/images/calendar.svg" alt="calendar" class="filters__calendar__button__icon">
+                        <div class="filters__calendar__button__dates">
+                            {{ $date_filter_end->format('d/m/Y') }} - {{ $date_filter_start->format('d/m/Y') }}
+                        </div>
+                    </button>
+                    <div class="filters__calendar__popup">
+                        <div id="calendar"></div>
+                    </div>
+                </div>
             </div>
         </form>
         <div class="tickets">
@@ -349,7 +427,8 @@
             @if ($tickets->hasPages())
                 <div class="footer__pagination">
                     <button class='footer__pagination__previous' @disabled($tickets->currentPage() == 1) id="prevPage">
-                        <img src="/images/pagination_arrow_left.svg" alt="arrow_left" width="10" height="10" />
+                        <img src="/images/pagination_arrow_left.svg" alt="arrow_left" width="10"
+                            height="10" />
                     </button>
                     <div class="footer__pagination__pages">
                         @for ($i = 1; $i <= $tickets->lastPage(); $i++)
@@ -381,21 +460,6 @@
             </div>
             <div id="body"></div>
         </div>
-        {{-- <div id="detailsModal" class="newModal">
-            <div class="newModal__header">
-                <div class="newModal__header__title">Ticket</div>
-                <button class="newModal__header__exit" id="exitDetails">
-                    <img src="/images/x-symbol.svg" alt="x">
-                </button>
-            </div>
-
-            <div class="newModal__selector">
-                <button id="ticketSelectorDetails" class="newModal__selector__button">Details</button>
-                <button id="editSelectorDetails" class="newModal__selector__button">Edit</button>
-                <button id="commentsSelectorDetails" class="newModal__selector__button">Comments</button>
-            </div>
-            <div id="bodyDetail"></div>
-        </div> --}}
         <div id="ticketInfoModal"></div>
     </div>
 </div>

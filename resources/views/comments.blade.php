@@ -1,7 +1,6 @@
 @extends('layouts.app')
 @php
     $userID = Auth::id();
-    $ticketID = Request::route('ticket_id');
     define('MINUTES_IN_MONTH', 43800);
     define('MINUTES_IN_DAY', 1440);
     define('MINUTES_IN_HOUR', 60);
@@ -36,12 +35,10 @@
         $(document).ready(() => {
             const baseUrl = "http://127.0.0.1:8000/";
             const TOAST_DURATION = 2000;
-            const ticketID = @json($ticketID);
+            const ticketID = @json($ticket_id);
 
-
-            $(".bodyModal__comments__comment__delete").on("click", function() {
-                commentID = $(this).data('id');
-
+            $(".bodyModal__comments__comment__buttons__delete").on("click", function() {
+                const commentID = $(this).data('id');
                 $.ajax({
                     type: "DELETE",
                     url: baseUrl + `comment/${commentID}`,
@@ -60,9 +57,129 @@
                             },
                         }).showToast();
                         $("#commentBody").html(response)
+                        const commentCountDiv = $(
+                            ".newModal__selector__button__commentCount");
+                        const currentCommentCount = parseInt(commentCountDiv.text());
+
+                        commentCountDiv.text(currentCommentCount - 1);
 
                     }
                 });
+            })
+
+            $(".bodyModal__comments__comment__replies__buttons__edit").on("click", function() {
+                const replyID = $(this).data('id');
+
+                $(".bodyModal").animate({
+                    width: "toggle"
+                }, 350, () => {
+                    $.ajax({
+                        type: "GET",
+                        url: baseUrl + `reply/${replyID}/edit`,
+                        success: function(response) {
+                            $("#bodyDetail").html(response);
+                        }
+
+                    })
+                })
+            });
+
+            $(".bodyModal__comments__comment__replyForm").on("submit", function(event) {
+                event.preventDefault();
+                const commentID = event.currentTarget.id.replace("reply", "");
+                const reply = event.currentTarget[0].value;
+
+                $.ajax({
+                    type: "POST",
+                    url: baseUrl + "reply",
+                    headers: {
+                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                    },
+                    data: {
+                        reply: reply,
+                        ticket_id: ticketID,
+                        comment_id: commentID,
+                    },
+                    success: function(response) {
+                        $("#bodyDetail").html(response);
+                        Toastify({
+                            text: "Reply added",
+                            duration: TOAST_DURATION,
+                            close: true,
+                            gravity: "top",
+                            position: "center",
+                            style: {
+                                background: "#50C996",
+                            },
+                        }).showToast();
+                    }
+                });
+
+            })
+
+            $(".bodyModal__comments__comment__replies__buttons__delete").on("click", function() {
+                const replyID = $(this).data('reply');
+                const commentID = $(this).data('comment');
+
+                $.ajax({
+                    type: "DELETE",
+                    url: baseUrl + `reply/${commentID}/${replyID}`,
+                    headers: {
+                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                    },
+                    success: function(response) {
+                        Toastify({
+                            text: "Reply deleted",
+                            duration: TOAST_DURATION,
+                            close: true,
+                            gravity: "top",
+                            position: "center",
+                            style: {
+                                background: "#50C996",
+                            },
+                        }).showToast();
+                        $("#commentBody").html(response)
+                        const commentCountDiv = $(
+                            ".newModal__selector__button__commentCount");
+                        const currentCommentCount = parseInt(commentCountDiv.text());
+
+                        commentCountDiv.text(currentCommentCount - 1);
+
+                    }
+                });
+            })
+
+
+            $(".bodyModal__comments__comment__replyForm__buttons__cancel").on("click", function() {
+                const commentID = $(this).data('id');
+
+                $(`#reply${commentID}`).hide();
+            })
+
+            $(".bodyModal__comments__comment__buttons__reply").on("click", function() {
+                const commentID = $(this).data('id');
+
+                $(`#reply${commentID}`).animate({
+                    width: "toggle"
+                }, 350)
+            })
+
+            $(".bodyModal__comments__comment__buttons__edit").on("click", function() {
+                const commentID = $(this).data('id');
+
+                $(".bodyModal").animate({
+                    width: "toggle"
+                }, 350, () => {
+                    $.ajax({
+                        type: "GET",
+                        url: baseUrl + `comment/${commentID}/edit`,
+                        success: function(response) {
+                            $("#bodyDetail").html(response);
+                        }
+
+                    })
+                })
+
             })
 
             $("#commentForm").on("submit", (event) => {
@@ -90,7 +207,13 @@
                                 background: "#50C996",
                             },
                         }).showToast();
-                        $("#commentBody").html(response)
+                        $("#commentBody").html(response);
+                        const commentCountDiv = $(
+                            ".newModal__selector__button__commentCount");
+                        const currentCommentCount = parseInt(commentCountDiv
+                            .text());
+
+                        commentCountDiv.text(currentCommentCount + 1);
 
                     },
                     error: function(response) {
@@ -116,25 +239,72 @@
     <div class="bodyModal">
         <form id="commentForm" class="bodyModal__commentAdd">
             <textarea id="commentText" class="bodyModal__commentAdd__textarea" placeholder="Add comment" cols="20" rows="10"></textarea>
-            <button class="bodyModal__commentAdd__submit" type="submit">Add Comment</button>
+            <div class="bodyModal__commentAdd__buttons">
+                <button class="bodyModal__commentAdd__buttons__submit" type="submit">Add Comment</button>
+            </div>
         </form>
         <div class="bodyModal__comments">
             @foreach ($comments as $comment)
                 <div class="bodyModal__comments__comment">
                     <div class="bodyModal__comments__comment__header">
                         <div class="bodyModal__comments__comment__header__name">
-                            {{ $comment->first_name . ' ' . $comment->last_name }}
+                            {{ $comment->user->first_name . ' ' . $comment->user->last_name }}
                         </div>
                         <div class="bodyModal__comments__comment__header__separator">&#x2022;</div>
                         <div class="bodyModal__comments__comment__header__date">
                             {{ calculateTime($comment->created_at) }}
-                            {{ checkIfEdited($comment->created_at, $comment->updated_at) }}</div>
+                            {{ checkIfEdited($comment->created_at, $comment->updated_at) }}
+                        </div>
                     </div>
                     <div class="bodyModal__comments__comment__body">{{ $comment->comment }}</div>
-                    @if ($userID == $comment->user_id)
-                        <button type="button" class="bodyModal__comments__comment__delete"
-                            data-id="{{ $comment->comment_id }}">Delete</button>
-                    @endif
+                    <div class="bodyModal__comments__comment__buttons">
+                        <button type="button" class="bodyModal__comments__comment__buttons__reply"
+                            data-id="{{ $comment->id }}">Reply</button>
+                        @if ($userID == $comment->user_id)
+                            <button type="button" class="bodyModal__comments__comment__buttons__edit"
+                                data-id="{{ $comment->id }}">Edit</button>
+                            <button type="button" class="bodyModal__comments__comment__buttons__delete"
+                                data-id="{{ $comment->id }}">Delete</button>
+                        @endif
+                    </div>
+
+                    <form id="{{ 'reply' . $comment->id }}" class="bodyModal__comments__comment__replyForm">
+                        <textarea name="reply" placeholder="Add your reply" class="bodyModal__comments__comment__replyForm__textarea"
+                            cols="30" rows="10"></textarea>
+                        <div class="bodyModal__comments__comment__replyForm__buttons">
+                            <button class="bodyModal__comments__comment__replyForm__buttons__cancel"
+                                data-id="{{ $comment->id }}" type="button">Cancel</button>
+                            <button class="bodyModal__comments__comment__replyForm__buttons__reply" type="submit">Add
+                                Reply</button>
+                        </div>
+                    </form>
+
+                    @foreach ($comment->replies as $reply)
+                        <div class="bodyModal__comments__comment__replies">
+                            <div class="bodyModal__comments__comment__replies__header">
+                                <div class="bodyModal__comments__comment__replies__header__name">
+                                    {{ $reply->user->first_name . ' ' . $reply->user->last_name }}</div>
+                                <div class="bodyModal__comments__comment__replies__header__separator">&#x2022;
+                                </div>
+                                <div class="bodyModal__comments__comment__replies__header__date">
+                                    {{ calculateTime($reply->created_at) }}
+                                    {{ checkIfEdited($reply->created_at, $reply->updated_at) }}
+                                </div>
+                            </div>
+                            <div class="bodyModal__comments__comment__replies__reply">{{ $reply->reply }}</div>
+
+                            @if ($userID == $comment->user_id)
+                                <div class="bodyModal__comments__comment__replies__buttons">
+                                    <button type="button" class="bodyModal__comments__comment__replies__buttons__edit"
+                                        data-id="{{ $reply->id }}">Edit</button>
+                                    <button type="button"
+                                        class="bodyModal__comments__comment__replies__buttons__delete"
+                                        data-reply="{{ $reply->id }}"
+                                        data-comment="{{ $comment->id }}">Delete</button>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
                 </div>
             @endforeach
         </div>

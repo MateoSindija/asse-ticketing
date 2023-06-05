@@ -6,9 +6,12 @@ use App\Models\Comment;
 use App\Http\Requests\StoreCommentsRequest;
 use App\Http\Requests\UpdateCommentsRequest;
 use Illuminate\Http\Request;
+use Illuminate\Log\Logger;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+
+use function Psy\debug;
 
 class CommentController extends Controller
 {
@@ -24,17 +27,6 @@ class CommentController extends Controller
         $this->middleware('auth');
     }
 
-    /** 
-     * @param  array  $data
-     * @return \Illuminate\Contracts\Validation\Validator
-     */
-    private function validate_update(array $data)
-    {
-        return Validator::make($data, [
-            'comment' => ['required', 'string', 'max:300'],
-        ]);
-    }
-
     /**
      * @param string $ticket_id
      * @return array App\Models\Comment
@@ -43,23 +35,16 @@ class CommentController extends Controller
     {
         $comments = $this->getComments($ticket_id);
 
-        return view("comments", ["comments" => $comments]);
+
+        return view("comments", ["comments" => $comments, "ticket_id" => $ticket_id]);
     }
 
-    private function getComments(string $ticket_id)
+    public function getComments(string $ticket_id)
     {
+
         $comments = Comment::where("ticket_id", $ticket_id)
-            ->join("user", "comment.user_id", "=", "user.id")
-            ->select(
-                "user.id as user_id",
-                "comment.id as comment_id",
-                "comment.ticket_id",
-                "user.first_name",
-                "user.last_name",
-                "comment.created_at",
-                "comment.updated_at",
-                "comment.comment"
-            )
+            ->with("replies", "user", "replies.user")
+            ->orderBy("comment.created_at", "asc")
             ->get();
 
         return $comments;
@@ -74,7 +59,7 @@ class CommentController extends Controller
 
         $comments = $this->getComments($request->ticket_id);
 
-        return view("comments", ["comments" => $comments]);
+        return view("comments", ["comments" => $comments, "ticket_id" => $request->ticket_id]);
     }
 
     /**
@@ -91,9 +76,11 @@ class CommentController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Comment $comments)
+    public function edit(Request $request)
     {
-        //
+        $comment = Comment::query()->where("id", $request->comment_id)->first();
+
+        return view("commentEdit", ["comment" => $comment]);
     }
 
     /**
@@ -102,16 +89,12 @@ class CommentController extends Controller
     public function update(StoreCommentsRequest $request, string $id)
     {
 
-        $validator = $this->validate_update($request->all());
-        if ($validator->fails()) {
-            return response($validator->errors()->first(), 403);
-        }
-
-
         Comment::where("id", $id)
             ->update(["comment" => $request->comment]);
 
-        return redirect("/home")->with("status", "Updated successfully");
+        $comment = Comment::where("id", $request->comment_id)->select("ticket_id")->first();
+        $comments = $this->getComments($comment->ticket_id);
+        return view("comments", ["comments" => $comments, "ticket_id" => $comment->ticket_id]);
     }
 
     /**
@@ -122,7 +105,6 @@ class CommentController extends Controller
         $comment = Comment::where("id", $request->comment_id)->select("ticket_id")->first();
         Comment::destroy($request->comment_id);
         $comments = $this->getComments($comment->ticket_id);
-
-        return view("comments", ["comments" => $comments]);
+        return view("comments", ["comments" => $comments, "ticket_id" => $comment->ticket_id]);
     }
 }

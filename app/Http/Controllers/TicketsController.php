@@ -2,20 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Tickets;
 use App\Http\Requests\StoreTicketsRequest;
 use App\Http\Requests\UpdateTicketsRequest;
 use App\Models\Client;
-use App\Models\Comment;
 use App\Models\Ticket;
 use App\Models\User;
-use Dotenv\Util\Str;
+use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 
 class TicketsController extends Controller
 {
@@ -39,22 +34,26 @@ class TicketsController extends Controller
         $status = $request->input("status");
         $entries = $request->input("entries");
         $search = $request->input("search");
+        $start_date = $request->input("startDate");
+        $end_date = $request->input("endDate");
 
         $tickets = $search ?
-            $this->search($search, $status, $entries)
-            : $this->tickets($status, $entries);
+            $this->search($search, $status, $entries, $start_date, $end_date)
+            : $this->tickets($status, $entries, $start_date, $end_date);
 
 
-        return view("home", array_merge(["tickets" => $tickets], $this->getHomeData()));
+        return view("home", array_merge(["tickets" => $tickets], $this->getHomeData($start_date, $end_date)));
     }
 
-    private function getHomeData(): array
+    private function getHomeData(string | null $start_date, string | null $end_date): array
     {
         $number_of_tickets = Ticket::count();
         $number_of_completed_tickets = Ticket::where("status", "=", "Closed")->count();
         $number_of_progress_tickets = Ticket::where("status", "=", "In progress")->count();
         $number_of_opened_tickets = Ticket::where("status", "=", "Open")->count();
         $completion_percentage = number_format((float)(($number_of_completed_tickets / $number_of_tickets) * 100), 1, ".", "");
+        $latest_ticket_date = Ticket::latest()->select("created_at")->first()->created_at;
+        $oldest_ticket_date =  Ticket::oldest()->select("created_at")->first()->created_at;
 
         return [
             "number_of_tickets" => $number_of_tickets,
@@ -62,17 +61,25 @@ class TicketsController extends Controller
             "number_of_progress_tickets" => $number_of_progress_tickets,
             "number_of_opened_tickets" => $number_of_opened_tickets,
             "completion_percentage" => $completion_percentage,
+            "latest_ticket_date" => $latest_ticket_date,
+            "oldest_ticket_date" => $oldest_ticket_date,
+            "date_filter_start" => $start_date ? DateTime::createFromFormat('Y-m-d', $start_date) : $oldest_ticket_date,
+            "date_filter_end" => $end_date ? DateTime::createFromFormat('Y-m-d', $end_date) : $latest_ticket_date,
         ];
     }
 
-    private function tickets(string | null $status, string | null $entries)
-    {
+    private function tickets(
+        string | null $status,
+        string | null $entries,
+        string | null $start_date,
+        string | null $end_date
+    ) {
 
 
         $query = Ticket::query();
 
-        $query->whereHas("client");
-        $query->whereHas("user");
+        $query->has("client");
+        $query->has("user");
 
         $query->when($status && $status != "all", function ($query) use ($status) {
             if ($status == "mine") {
@@ -81,15 +88,23 @@ class TicketsController extends Controller
             }
             return $query->where("status", $status);
         });
-
+        $query->when($start_date && $end_date, function ($query) use ($start_date, $end_date) {
+            return $query->whereBetween("created_at", [$start_date, $end_date]);
+        });
 
         return $query->orderBy("created_at", "desc")->paginate($entries ? $entries : 20);
     }
 
-    private function search(string $q, string | null $status = "all", string | null $entries = "20")
-    {
+    private function search(
+        string $q,
+        string | null $status = "all",
+        string | null $entries = "20",
+        string | null $start_date,
+        string | null $end_date
+    ) {
 
-        $ticket = Ticket::join("client", "ticket.client_id", "=", "client.id")
+
+        $ticket = Ticket::select('ticket.*')->join("client", "ticket.client_id", "=", "client.id")
             ->join("user", "ticket.user_id", "=", "user.id")
             ->when($status != "all", function ($query) use ($status) {
                 if ($status == "mine") {
@@ -97,6 +112,8 @@ class TicketsController extends Controller
                     return $query->where("ticket.user_id", $userID);
                 }
                 return $query->where("status", $status);
+            })->when($start_date && $end_date, function ($query) use ($start_date, $end_date) {
+                return $query->whereBetween("ticket.created_at", [$start_date, $end_date]);
             })->where(function ($query) use ($q) {
                 $query->orWhere('user.first_name', 'ILIKE', '%' . $q . '%')
                     ->orWhere('user.last_name', 'ILIKE', '%' . $q . '%')
@@ -130,7 +147,6 @@ class TicketsController extends Controller
      */
     public function store(StoreTicketsRequest $request)
     {
-
 
         Ticket::query()->create($request->all());
 
@@ -171,9 +187,10 @@ class TicketsController extends Controller
 
         $comment_count = Ticket::where("id", $id)->withCount(["comment" => function ($query) use ($id) {
             $query->where("ticket_id", $id);
-        }])->get();
+        }])->first();
 
-        return view("ticketInfo", ["ticket" => $ticket, "comment_count" => $comment_count[0]->comment_count]);
+
+        return view("ticketInfo", ["ticket" => $ticket, "comment_count" => $comment_count->comment_count]);
     }
 
     /**
@@ -204,14 +221,14 @@ class TicketsController extends Controller
     public function update(UpdateTicketsRequest $request, string $id)
     {
 
-        $tickets = $this->tickets("all", "20");
+        $tickets = $this->tickets("all", "20", null, null);
 
 
         Ticket::where("id", $id)
             ->update($request->all());
 
 
-        return view("home", array_merge(["tickets" => $tickets], $this->getHomeData()));
+        return view("home", array_merge(["tickets" => $tickets], $this->getHomeData(null, null)));
     }
     /**
      * Remove the specified resource from storage.
@@ -221,9 +238,9 @@ class TicketsController extends Controller
         Ticket::destroy($id);
 
 
-        $tickets = $this->tickets("all", "20");
+        $tickets = $this->tickets("all", "20", null, null);
 
 
-        return view("home", array_merge(["tickets" => $tickets], $this->getHomeData()));
+        return view("home", array_merge(["tickets" => $tickets], $this->getHomeData(null, null)));
     }
 }

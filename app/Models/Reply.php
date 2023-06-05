@@ -8,14 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Comment extends Model
+class Reply extends Model
 {
     use HasFactory, HasUuids;
 
 
-    protected $table = 'comment';
+    protected $table = 'reply';
     protected $primaryKey = "id";
-    protected $fillable = ["comment", "ticket_id", "user_id"];
+    protected $fillable = ["reply", "comment_id", "user_id"];
 
 
     public function user(): BelongsTo
@@ -23,13 +23,8 @@ class Comment extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function ticket(): BelongsTo
+    public function comment(): BelongsTo
     {
-        return $this->belongsTo(Ticket::class);
-    }
-
-    public function replies(): HasMany
-    {
-        return $this->hasMany(Reply::class, "comment_id", "id");
+        return $this->belongsTo(Comment::class);
     }
 }

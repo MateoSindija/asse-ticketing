@@ -18,18 +18,16 @@ class Client extends Model
     protected $primaryKey = "id";
     protected $fillable = ["first_name", "last_name", "email", "phone"];
 
-    /**
-     * Get the user's full name.
-     *
-     * @return string
-     */
-    public function getFullName()
-    {
-        return "{$this->first_name} {$this->last_name}";
-    }
 
     public function ticket(): HasMany
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Ticket $ticket) {
+            $ticket->delete();
+        });
     }
 }

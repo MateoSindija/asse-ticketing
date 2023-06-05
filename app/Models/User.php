@@ -28,15 +28,6 @@ class User extends Model implements
     protected $fillable = ["first_name", "last_name", "email", "password"];
     protected $hidden = ['password', 'remember_token'];
 
-    /**
-     * Get the user's full name.
-     *
-     * @return string
-     */
-    public function getFullName()
-    {
-        return "{$this->first_name} {$this->last_name}";
-    }
 
     public function ticket(): HasMany
     {
@@ -46,5 +37,10 @@ class User extends Model implements
     public function comment(): HasMany
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function replies(): HasMany
+    {
+        return $this->hasMany(Reply::class, "user_id", "id");
     }
 }

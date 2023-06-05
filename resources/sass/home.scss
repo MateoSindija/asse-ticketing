@@ -306,6 +306,40 @@
                 }
             }
         }
+
+        &__calendar {
+            margin-left: auto;
+            position: relative;
+
+            &__button {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                border: 2px solid $table-divider;
+                background-color: white;
+                padding: 5px;
+                &__icon {
+                    margin-right: 10px;
+                    width: 20px;
+                    height: 20px;
+                }
+                &:hover {
+                    filter: brightness(0.9);
+                }
+            }
+
+            &__popup {
+                position: absolute;
+                right: 0px;
+                top: 40px;
+                width: 310px;
+                padding: 10px;
+                border-radius: 4px;
+                background-color: white;
+                @include scroll-bar();
+                box-shadow: 10px 10px 36px -20px rgba(0, 0, 0, 0.75);
+            }
+        }
     }
 
     .tickets {
@@ -521,4 +555,45 @@
             }
         }
     }
+}
+
+.fc-button-group {
+    display: flex;
+    align-items: center;
+}
+.fc-col-header-cell-cushion {
+    text-decoration: none;
+    color: $blue-color;
+    pointer-events: none;
+}
+.fc-daygrid-day-number {
+    text-decoration: none;
+    color: $blue-color;
+    pointer-events: none;
+}
+
+.fc-scroller {
+    @include scroll-bar();
+}
+
+.fc-prev-button {
+    @include pagination-button(true);
+    margin-right: 10px !important;
+}
+
+.fc-next-button {
+    @include pagination-button(true);
+}
+
+.fc-defaultRange-button {
+    margin-right: 10px !important;
+    @include new-ticket-btn();
+    margin-right: 10px !important;
+    background-color: white !important;
+    color: $table-header !important;
+    border: 1px solid $table-header !important;
+}
+.fc-toolbar-title {
+    font-size: 19px !important;
+    margin-right: 10px !important;
 }
