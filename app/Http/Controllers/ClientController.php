@@ -30,10 +30,14 @@ class ClientController extends Controller
     public function index(Request $request)
     {
         $search = $request->input("search");
-        $clients = $search ? $this->search($search) : Client::all();
+        $entries = $request->input("entries");
+        if ($search) {
+            return $this->search($search)->toJson();
+        }
 
+        $clients = Client::orderBy("created_at")->paginate($entries ? $entries : 20);
 
-        return $clients->toJson();
+        return view("clients", ["clients" => $clients]);
     }
 
     private function search(string | null $q)
@@ -93,22 +97,23 @@ class ClientController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Client $clients)
+    public function edit(Request $request)
     {
-        //
+        $client = Client::where("id", $request->client_id)->first();
+        return view("clientAdd", ["client" => $client]);
     }
-
     /**
      * Update the specified resource in storage.
      */
-    public function update(StoreClientsRequest $request, string $id)
+    public function update(UpdateClientsRequest $request, string $id)
     {
-
 
         Client::where("id", $id)
             ->update($request->all());
 
-        return response("Updated successfully", 200);
+        $clients = Client::orderBy("created_at")->paginate(20);
+
+        return view("clients", ["clients" => $clients]);
     }
 
     /**
@@ -117,6 +122,8 @@ class ClientController extends Controller
     public function destroy(string $client_id)
     {
         Client::destroy($client_id);
-        return redirect("/home")->with("status", "Deleted successfully");
+        $clients = Client::orderBy("created_at")->paginate(20);
+
+        return view("clients", ["clients" => $clients]);
     }
 }

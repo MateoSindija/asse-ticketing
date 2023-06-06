@@ -36,7 +36,8 @@ class Ticket extends Model
     protected static function booted(): void
     {
         static::deleting(function (Ticket $ticket) {
-            $ticket->comment()->delete();
+            $comment_ids = Comment::where("ticket_id", $ticket->id)->pluck("id");
+            Comment::destroy($comment_ids);
         });
     }
 }

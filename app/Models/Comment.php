@@ -32,4 +32,11 @@ class Comment extends Model
     {
         return $this->hasMany(Reply::class, "comment_id", "id");
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Comment $comment) {
+            $comment->replies()->delete();
+        });
+    }
 }

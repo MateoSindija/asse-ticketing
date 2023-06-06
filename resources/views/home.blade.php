@@ -36,6 +36,24 @@
             $('#mine').on('click', () => {
                 handleStatuChange("mine")
             });
+            $('#clients').on('click', () => {
+
+                $("#closed").removeClass("statusHeader__statusButtons__statusButton__highlight");
+                $("#progress").removeClass("statusHeader__statusButtons__statusButton__highlight");
+                $("#open").removeClass("statusHeader__statusButtons__statusButton__highlight");
+                $("#all").removeClass("statusHeader__statusButtons__statusButton__highlight");
+                $("#mine").removeClass("statusHeader__statusButtons__statusButton__highlight");
+
+                $("#clients").addClass("statusHeader__statusButtons__statusButton__highlight");
+
+                $.ajax({
+                    type: "GET",
+                    url: baseUrl + "client",
+                    success: function(response) {
+                        $("#table").html(response)
+                    }
+                });
+            });
 
             $(".footer__pagination__pages__pageButton").on("click", (event) => {
                 const newPage = event.target.innerText;
@@ -71,6 +89,15 @@
                 }, 350, () => {
                     addClassToSelector(true)
                     $("#body").empty()
+                });
+
+            })
+
+            $("#exitClient").on("click", (event) => {
+                $("#editClient").animate({
+                    width: 'toggle'
+                }, 350, () => {
+                    $("#bodyEditClient").empty()
                 });
 
             })
@@ -160,6 +187,7 @@
                 }
             });
 
+
             $(".filters__calendar__button").on("click", () => {
                 let calendarEl = document.getElementById('calendar');
                 const endDate = new Date(@json($latest_ticket_date));
@@ -214,6 +242,7 @@
 
 
             const addClassToSelector = (isTicketActive) => {
+                $("#clients").removeClass("statusHeader__statusButtons__statusButton__highlight");
                 if (isTicketActive) {
                     $("#ticketSelector").addClass("newModal__selector__button--highlight")
                     $("#userSelector").removeClass("newModal__selector__button--highlight")
@@ -337,6 +366,7 @@
                     'statusHeader__statusButtons__statusButton',
                     'statusHeader__statusButtons__statusButton__highlight' => $status == 'mine',
                 ])>My tickets</button>
+                <button id="clients" class='statusHeader__statusButtons__statusButton'>Clients</button>
             </div>
         </div>
         <form id="search">
@@ -364,87 +394,89 @@
                 </div>
             </div>
         </form>
-        <div class="tickets">
-            <div class="tickets__content__header">
-                <div class="tickets__content__header__name">Name</div>
-                <div class="tickets__content__header__user">Client</div>
-                <div class="tickets__content__header__agent">Assigne</div>
-                <div class="tickets__content__header__date">Created At</div>
-                <div class="tickets__content__header__status">Status</div>
-                <div class="tickets__content__header__action">Action</div>
-            </div>
-            @foreach ($tickets as $ticket)
-                <div id="row" class="tickets__content__row">
-                    <div class="tickets__content__row__info">
-                        <div class="tickets__content__row__info__title">{{ $ticket->title }}</div>
-                        <div class="tickets__content__row__info__desc">{{ $ticket->description }}</div>
-                    </div>
-                    <div class="tickets__content__row__name">{{ $ticket->client->first_name }}
-                        {{ $ticket->client->last_name }}
-                    </div>
-                    <div class="tickets__content__row__agent">{{ $ticket->user->first_name }}
-                        {{ $ticket->user->last_name }}
-                    </div>
-                    <div class="tickets__content__row__date">{{ $ticket->created_at->format('d/m/Y') }}</div>
-                    <div class="tickets__content__row__status">
-                        <div @class([
-                            'tickets__content__row__status__content',
-                            'tickets__content__row__status__content--closed' =>
-                                $ticket->status == 'Closed',
-                            'tickets__content__row__status__content--open' => $ticket->status == 'Open',
-                            'tickets__content__row__status__content--progress' =>
-                                $ticket->status == 'In progress',
-                        ])>{{ $ticket->status }}
+        <div id="table">
+            <div class="tickets">
+                <div class="tickets__content__header">
+                    <div class="tickets__content__header__name">Name</div>
+                    <div class="tickets__content__header__user">Client</div>
+                    <div class="tickets__content__header__agent">Assigne</div>
+                    <div class="tickets__content__header__date">Created At</div>
+                    <div class="tickets__content__header__status">Status</div>
+                    <div class="tickets__content__header__action">Action</div>
+                </div>
+                @foreach ($tickets as $ticket)
+                    <div id="row" class="tickets__content__row">
+                        <div class="tickets__content__row__info">
+                            <div class="tickets__content__row__info__title">{{ $ticket->title }}</div>
+                            <div class="tickets__content__row__info__desc">{{ $ticket->description }}</div>
+                        </div>
+                        <div class="tickets__content__row__name">{{ $ticket->client->first_name }}
+                            {{ $ticket->client->last_name }}
+                        </div>
+                        <div class="tickets__content__row__agent">{{ $ticket->user->first_name }}
+                            {{ $ticket->user->last_name }}
+                        </div>
+                        <div class="tickets__content__row__date">{{ $ticket->created_at->format('d/m/Y') }}</div>
+                        <div class="tickets__content__row__status">
+                            <div @class([
+                                'tickets__content__row__status__content',
+                                'tickets__content__row__status__content--closed' =>
+                                    $ticket->status == 'Closed',
+                                'tickets__content__row__status__content--open' => $ticket->status == 'Open',
+                                'tickets__content__row__status__content--progress' =>
+                                    $ticket->status == 'In progress',
+                            ])>{{ $ticket->status }}
+                            </div>
+                        </div>
+                        <div class="tickets__content__row__actions">
+                            <button data-id="{{ $ticket->id }}" class="tickets__content__row__actions__button">
+                                Details
+                                <img src="/images/double_arrow_right.svg" width="12" height="12"
+                                    alt="double_arrow_right">
+                            </button>
                         </div>
                     </div>
-                    <div class="tickets__content__row__actions">
-                        <button data-id="{{ $ticket->id }}" class="tickets__content__row__actions__button">
-                            Details
-                            <img src="/images/double_arrow_right.svg" width="12" height="12"
-                                alt="double_arrow_right">
+                @endforeach
+
+            </div>
+            <div class="footer">
+                <div class="footer__entries">
+                    <select class="footer__entries__select" id="entries">
+                        <option class="footer__entries__select__option"
+                            @if ($entries == '20') selected @endif value="20">20
+                        </option>
+                        <option class="footer__entries__select__option"
+                            @if ($entries == '50') selected @endif value="50">50
+                        </option>
+                        <option class="footer__entries__select__option"
+                            @if ($entries == '100') selected @endif value="100">
+                            100
+                        </option>
+                    </select>
+                    <div class="footer__entries__text">Entries</div>
+                </div>
+                @if ($tickets->hasPages())
+                    <div class="footer__pagination">
+                        <button class='footer__pagination__previous' @disabled($tickets->currentPage() == 1) id="prevPage">
+                            <img src="/images/pagination_arrow_left.svg" alt="arrow_left" width="10"
+                                height="10" />
+                        </button>
+                        <div class="footer__pagination__pages">
+                            @for ($i = 1; $i <= $tickets->lastPage(); $i++)
+                                <button @class([
+                                    'footer__pagination__pages__pageButton',
+                                    'footer__pagination__pages__pageButton--active' =>
+                                        $tickets->currentPage() == $i,
+                                ])>{{ $i }}</button>
+                            @endfor
+                        </div>
+                        <button class='footer__pagination__next' @disabled($tickets->currentPage() == $tickets->lastPage()) id="nextPage">
+                            <img src="/images/pagination_arrow_right.svg" alt="arrow_right" width="10"
+                                height="10" />
                         </button>
                     </div>
-                </div>
-            @endforeach
-
-        </div>
-        <div class="footer">
-            <div class="footer__entries">
-                <select class="footer__entries__select" id="entries">
-                    <option class="footer__entries__select__option" @if ($entries == '20') selected @endif
-                        value="20">20
-                    </option>
-                    <option class="footer__entries__select__option" @if ($entries == '50') selected @endif
-                        value="50">50
-                    </option>
-                    <option class="footer__entries__select__option" @if ($entries == '100') selected @endif
-                        value="100">
-                        100
-                    </option>
-                </select>
-                <div class="footer__entries__text">Entries</div>
+                @endif
             </div>
-            @if ($tickets->hasPages())
-                <div class="footer__pagination">
-                    <button class='footer__pagination__previous' @disabled($tickets->currentPage() == 1) id="prevPage">
-                        <img src="/images/pagination_arrow_left.svg" alt="arrow_left" width="10"
-                            height="10" />
-                    </button>
-                    <div class="footer__pagination__pages">
-                        @for ($i = 1; $i <= $tickets->lastPage(); $i++)
-                            <button @class([
-                                'footer__pagination__pages__pageButton',
-                                'footer__pagination__pages__pageButton--active' =>
-                                    $tickets->currentPage() == $i,
-                            ])>{{ $i }}</button>
-                        @endfor
-                    </div>
-                    <button class='footer__pagination__next' @disabled($tickets->currentPage() == $tickets->lastPage()) id="nextPage">
-                        <img src="/images/pagination_arrow_right.svg" alt="arrow_right" width="10"
-                            height="10" />
-                    </button>
-                </div>
-            @endif
         </div>
         <div id="newModal" class="newModal">
             <div class="newModal__header">
@@ -459,6 +491,15 @@
                 <button id="userSelector" class="newModal__selector__button">Client</button>
             </div>
             <div id="body"></div>
+        </div>
+        <div id="editClient" class="newModal">
+            <div class="newModal__header">
+                <div class="newModal__header__title">Edit client</div>
+                <button class="newModal__header__exit" id="exitClient">
+                    <img src="/images/x-symbol.svg" alt="x">
+                </button>
+            </div>
+            <div id="bodyEditClient"></div>
         </div>
         <div id="ticketInfoModal"></div>
     </div>

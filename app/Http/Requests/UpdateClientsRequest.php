@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 
 class UpdateClientsRequest extends FormRequest
 {
@@ -21,8 +22,12 @@ class UpdateClientsRequest extends FormRequest
      */
     public function rules(): array
     {
+        Log::debug($this);
         return [
-            //
+            'first_name' => ['required', 'string', 'max:50'],
+            'last_name' => ['required', 'string', 'max:50'],
+            'phone' => ['required', 'string', 'max:20', 'unique:client,phone,' . $this->route()->parameter("client_id")],
+            'email' => ['required', 'email:rfc,dns', 'unique:client,email,' . $this->route()->parameter("client_id"), 'max:255']
         ];
     }
 }
