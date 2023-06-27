@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create("client", function (Blueprint $table) {
+        Schema::create("comments", function (Blueprint $table) {
             $table->uuid("id")->primary();
-            $table->string("first_name", 50);
-            $table->string("last_name", 50);
-            $table->string("phone", 20)->unique();
-            $table->string("email")->unique();
+            $table->foreignUuid("ticket_id");
+            $table->foreignUuid("user_id");
+            $table->uuid('parent_id')->nullable();
+            $table->string("comment", 300);
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::drop("client");
+        Schema::drop("comments");
     }
 };

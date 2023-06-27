@@ -1,0 +1,36 @@
+@import "mixins";
+@import "_variables";
+
+.notificationItem {
+    width: 100%;
+    padding: 3px 5px;
+    height: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    &__button {
+        border: none;
+        background-color: white;
+        border-radius: 50%;
+        padding: 10px;
+
+        &:hover {
+            filter: brightness(0.9);
+        }
+    }
+
+    &__info {
+        display: flex;
+        flex-direction: column;
+
+        &__title {
+            font-weight: 700;
+        }
+
+        &__time {
+            color: $input-border;
+            font-size: 12px;
+        }
+    }
+}

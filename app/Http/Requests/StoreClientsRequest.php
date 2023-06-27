@@ -24,8 +24,8 @@ class StoreClientsRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'max:50'],
             'last_name' => ['required', 'string', 'max:50'],
-            'phone' => ['required', 'string', 'max:20', 'unique:client,phone'],
-            'email' => ['required', 'email:rfc,dns', 'unique:client,email', 'max:255']
+            'phone' => ['required', 'string', 'max:20', 'unique:clients,phone'],
+            'email' => ['required', 'email:rfc,dns', 'unique:clients,email', 'max:255']
         ];
     }
 

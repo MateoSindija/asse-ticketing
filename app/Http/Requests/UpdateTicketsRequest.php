@@ -23,8 +23,8 @@ class UpdateTicketsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'client_id' => ['required', 'uuid', 'exists:client,id'],
-            'user_id' => ['required', 'uuid', 'exists:user,id'],
+            'client_id' => ['required', 'uuid', 'exists:clients,id'],
+            'user_id' => ['required', 'uuid', 'exists:users,id'],
             'status' => ['required', 'string', 'max:20', Rule::in(["Open", "In progress", "Closed"])],
             'title' => ['required', 'string', 'max:100'],
             'description' => ['required', 'string', 'max:1000'],

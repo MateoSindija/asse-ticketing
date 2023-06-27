@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ReplyController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TicketsController;
@@ -59,15 +60,10 @@ Route::prefix("/comment")->group(function () {
     Route::delete('{comment_id}', [CommentController::class, "destroy"]);
 });
 
-Route::prefix("/reply")->group(function () {
-    Route::post('', [ReplyController::class, "store"]);
-    Route::delete('{comment_id}/{reply_id}', [ReplyController::class, "destroy"]);
-    Route::patch('{reply_id}', [ReplyController::class, "update"]);
-    Route::get('{reply_id}/edit', [ReplyController::class, "edit"]);
-});
 
 Route::prefix("/ticket")->group(function () {
     Route::post('', [TicketsController::class, "store"]);
+    Route::post('/store-from-client', [TicketsController::class, 'storeFromClient']);
     Route::get('', [TicketsController::class, 'index']);
     Route::get('/create', [TicketsController::class, 'create']);
     Route::get('{ticket_id}', [TicketsController::class, "show"]);
@@ -81,6 +77,13 @@ Route::prefix("/user")->group(function () {
     Route::get('{user_id}', [UserController::class, "show"]);
     Route::patch('{user_id}', [UserController::class, "update"]);
 });
+
+Route::prefix("/message")->group(function () {
+    Route::get('', [MessageController::class, 'index']);
+    Route::delete('{message_id}', [MessageController::class, "destroy"]);
+});
+
+Route::view("/client-form", "clientFormForTicket");
 
 
 // Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

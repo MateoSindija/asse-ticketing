@@ -16,15 +16,18 @@
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
     <script src="
-        https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js
-        "></script>
+                                                            https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js
+                                                            "></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
     @stack('head')
 
+
     <!-- Scripts -->
-    @vite(['resources/sass/app.scss', 'resources/sass/modals.scss'])
+    @vite(['resources/sass/app.scss', 'resources/sass/modals.scss', 'resources/sass/notification.scss', 'resources/sass/clientForm.scss'])
 </head>
 
 <body>

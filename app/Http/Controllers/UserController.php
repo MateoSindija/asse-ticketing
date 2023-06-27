@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Uuid;
 
@@ -25,11 +28,11 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): String
     {
 
         $search = $request->input("search");
-        $users = $search ? $this->search($search) : User::all();
+        $users = $search ? User::searchUsers($search) : User::all();
 
         return $users->toJson();
     }
@@ -46,27 +49,6 @@ class UserController extends Controller
         return $user;
     }
 
-    private function search(string | null $q)
-    {
-
-        if ($q == "") {
-            return [];
-        }
-
-        $users = User::where(function ($query) use ($q) {
-            $query->orWhere('first_name', 'ILIKE', '%' . $q . '%')
-                ->orWhere('last_name', 'ILIKE', '%' . $q . '%')
-                ->orWhere('email', 'ILIKE', '%' . $q . '%')
-                ->orWhereRaw('CONCAT("user"."first_name",' . "' '" . ', "user"."last_name") ILIKE ' . "'%$q%'");
-        });
-
-
-
-
-        return $users->get();
-    }
-
-
     /**
      * Show the form for editing the specified resource.
      */
@@ -77,19 +59,19 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateUserRequest $request, string $id)
+    public function update(UpdateUserRequest $request, User $user): Redirector
     {
 
+        $user_id = $request->route("reply_id");
 
         //check if mail is taken
-        $count = User::where("email", "=", $request->email)->where("id", "<>", $id)->count();
+        $count = User::where("email", "=", $request->email)->where("id", "<>", $user_id)->count();
 
         if ($count >= 1) {
             return response("Mail taken",  403);
         }
 
-        User::where("id", $id)
-            ->update(["first_name" => $request->first_name, "last_name" => $request->last_name, "email" => $request->email]);
+        $user->whereId($user_id)->update($request->validated());
 
         return redirect("/home")->with("status", "Updated successfully");
     }
@@ -97,7 +79,7 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id): Redirector
     {
         User::destroy($id);
         return redirect("/home")->with("status", "Deleted successfully");

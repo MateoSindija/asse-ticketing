@@ -7,17 +7,17 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Run the migrations.  
      */
     public function up(): void
     {
-        Schema::create("comment", function (Blueprint $table) {
+
+        Schema::create("users", function (Blueprint $table) {
             $table->uuid("id")->primary();
-            $table->uuid("ticket_id");
-            $table->uuid("user_id");
-            $table->foreign("ticket_id")->references("id")->on("ticket");
-            $table->foreign("user_id")->references("id")->on("user");
-            $table->string("comment", 300);
+            $table->string("first_name", 50);
+            $table->string("last_name", 50);
+            $table->string("email")->unique();
+            $table->string("password");
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::drop("comment");
+        Schema::drop("users");
     }
 };

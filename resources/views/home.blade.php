@@ -5,18 +5,61 @@
     $search = Request::get('search') ? Request::get('search') : '';
 @endphp
 
-@push('head')
-    <script>
+
+@pushOnce('head')
+    <script id="homeScript">
         $(document).ready(() => {
             const baseUrl = "http://127.0.0.1:8000/"
             const status = @json($status);
             const entries = @json($entries);
             const search = @json($search);
             const currentPage = @json($tickets->currentPage());
+            const TOAST_DURATION = 2000;
             let dateFilterStart = @json($date_filter_start->format('Y-m-d'));
             let dateFilterEnd = @json($date_filter_end->format('Y-m-d'));
             let addActive = "ticket";
             let ticketID = "";
+            Pusher.logToConsole = true;
+
+            let pusher = new Pusher('fbdbd02a73d2e266af28', {
+                cluster: 'eu'
+            });
+
+            let channelMyTickets = pusher.subscribe(@json(auth()->user()->id));
+            channelMyTickets.bind('new-ticket', function(data) {
+                Toastify({
+                    text: "New Ticket added to your list",
+                    duration: TOAST_DURATION,
+                    close: true,
+                    gravity: "top",
+                    position: "center",
+                    style: {
+                        background: "#50C996",
+                    },
+                }).showToast();
+                loadPage(currentPage);
+            });
+
+
+            //hide notification on outside click
+            $(document).on("click", function(event) {
+                if (!$(event.target).closest(".header__buttons__notification__button, .notificationItem")
+                    .length) {
+                    $("#notifications").slideUp("fast");
+                }
+            });
+
+            $("#notificationButton").on("click", () => {
+                $.ajax({
+                    type: "GET",
+                    url: baseUrl + "message",
+                    success: function(response) {
+                        $("#notifications").html(response).animate({
+                            height: 'toggle'
+                        }, 350)
+                    }
+                });
+            })
 
             $('#open').on('click', () => {
                 handleStatuChange("Open")
@@ -50,7 +93,7 @@
                     type: "GET",
                     url: baseUrl + "client",
                     success: function(response) {
-                        $("#table").html(response)
+                        $("#table").html(response);
                     }
                 });
             });
@@ -63,7 +106,8 @@
                     url: baseUrl +
                         `ticket?entries=${entries}&status=${status}${search.length ? "&search=" + search : ""}&page=${newPage}${addDateFilter()}`,
                     success: function(response) {
-                        $("#home").html(response)
+                        pusher.unsubscribe(@json(auth()->user()->id));
+                        $("#home").replaceWith(response)
                     }
                 })
             })
@@ -78,7 +122,9 @@
                     url: baseUrl +
                         `ticket?entries=${entries}&status=${status}&search=${value}${addDateFilter()}`,
                     success: function(response) {
-                        $("#home").html(response)
+                        pusher.unsubscribe(@json(auth()->user()->id));
+                        $("#homeScript").remove();
+                        $("#home").replaceWith(response)
                     }
                 })
             })
@@ -102,8 +148,6 @@
 
             })
 
-
-
             $("#new").on("click", () => {
                 $("#newModal").animate({
                     width: 'toggle'
@@ -114,7 +158,7 @@
                         type: "GET",
                         url: baseUrl + `ticket/create`,
                         success: function(response) {
-                            $("#body").html(response)
+                            $("#body").replaceWith(response)
                         }
                     })
                 });
@@ -129,7 +173,9 @@
                     url: baseUrl +
                         `ticket?entries=${value}&status=${status}${search.length ? "&search=" + search : ""}${addDateFilter()}`,
                     success: function(response) {
-                        $("#home").html(response)
+                        pusher.unsubscribe(@json(auth()->user()->id));
+                        $("#homeScript").remove();
+                        $("#home").replaceWith(response)
                     }
                 });
             })
@@ -141,7 +187,7 @@
                     type: "GET",
                     url: baseUrl + `client/create`,
                     success: function(response) {
-                        $("#body").html(response)
+                        $("#body").replaceWith(response)
                     }
                 })
             })
@@ -154,7 +200,7 @@
                     type: "GET",
                     url: baseUrl + `ticket/create`,
                     success: function(response) {
-                        $("#body").html(response)
+                        $("#body").replaceWith(response)
                     }
                 })
             })
@@ -204,7 +250,10 @@
                                     url: baseUrl +
                                         `ticket?entries=${entries}&status=${status}${search.length ? "&search=" + search : ""}&startDate=${@json($oldest_ticket_date->format('Y-m-d'))}&endDate=${@json($latest_ticket_date->format('Y-m-d'))}`,
                                     success: function(response) {
-                                        $("#home").html(response)
+                                        pusher.unsubscribe(
+                                            @json(auth()->user()->id));
+                                        $("#homeScript").remove();
+                                        $("#home").replaceWith(response)
                                     }
                                 });
                             }
@@ -231,7 +280,9 @@
                             url: baseUrl +
                                 `ticket?entries=${entries}&status=${status}${search.length ? "&search=" + search : ""}${addDateFilter()}`,
                             success: function(response) {
-                                $("#home").html(response)
+                                pusher.unsubscribe(@json(auth()->user()->id));
+                                $("#homeScript").remove();
+                                $("#home").replaceWith(response)
                             }
                         });
                     }
@@ -239,7 +290,6 @@
                 });
                 calendar.render();
             })
-
 
             const addClassToSelector = (isTicketActive) => {
                 $("#clients").removeClass("statusHeader__statusButtons__statusButton__highlight");
@@ -259,7 +309,9 @@
                     url: baseUrl +
                         `ticket?entries=${entries}&status=${status}${search.length ? "&search=" + search : ""}&page=${newPageIndex}${addDateFilter()}`,
                     success: function(response) {
-                        $("#home").html(response)
+                        pusher.unsubscribe(@json(auth()->user()->id));
+                        $("#homeScript").remove();
+                        $("#home").replaceWith(response)
                     }
                 });
             }
@@ -269,7 +321,9 @@
                     type: "GET",
                     url: baseUrl + `ticket?status=${filter}`,
                     success: function(response) {
-                        $("#home").html(response)
+                        $("#homeScript").remove();
+                        pusher.unsubscribe(@json(auth()->user()->id));
+                        $("#home").replaceWith(response)
                     }
                 });
             }
@@ -284,7 +338,7 @@
             }
         });
     </script>
-@endpush
+@endPushOnce
 <div id="home">
     <div class="home">
         <div class="header">
@@ -299,6 +353,14 @@
                 <form id="logout-form" action="{{ route('logout') }}" method="POST">
                     @csrf
                 </form>
+                <div class="header__buttons__notification">
+                    <button id="notificationButton" class="header__buttons__notification__button">
+                        <img src="/images/bell.svg" alt="">
+                        <div class="header__buttons__notification__button__counter">{{ $message_count }}</div>
+                    </button>
+                    <div class="header__buttons__notification__list" id="notifications"></div>
+                </div>
+
                 <button id="new" class="header__buttons__addButton">
                     <img src="/images/plus_icon.svg" alt="plus">
                     Add new
@@ -410,11 +472,15 @@
                             <div class="tickets__content__row__info__title">{{ $ticket->title }}</div>
                             <div class="tickets__content__row__info__desc">{{ $ticket->description }}</div>
                         </div>
-                        <div class="tickets__content__row__name">{{ $ticket->client->first_name }}
+                        <div class="tickets__content__row__name">
+                            {{ $ticket->client->first_name }}
                             {{ $ticket->client->last_name }}
                         </div>
-                        <div class="tickets__content__row__agent">{{ $ticket->user->first_name }}
-                            {{ $ticket->user->last_name }}
+                        <div class="tickets__content__row__agent">
+                            @if ($ticket->user != null)
+                                {{ $ticket->user->first_name }}
+                                {{ $ticket->user->last_name }}
+                            @endif
                         </div>
                         <div class="tickets__content__row__date">{{ $ticket->created_at->format('d/m/Y') }}</div>
                         <div class="tickets__content__row__status">
@@ -494,9 +560,15 @@
         </div>
         <div id="editClient" class="newModal">
             <div class="newModal__header">
-                <div class="newModal__header__title">Edit client</div>
+                <div class="newModal__header__title">Client</div>
                 <button class="newModal__header__exit" id="exitClient">
                     <img src="/images/x-symbol.svg" alt="x">
+                </button>
+            </div>
+            <div class="newModal__selector">
+                <button id="clientSelectorEdit" class='newModal__selector__button'>Edit</button>
+                <button id="clientSelectorTickets" class='newModal__selector__button'>
+                    Tickets
                 </button>
             </div>
             <div id="bodyEditClient"></div>

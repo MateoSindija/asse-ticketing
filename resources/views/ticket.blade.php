@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-
-@push('head')
+@pushOnce('head')
     <script>
         $(document).ready(() => {
             let userID = @json(isset($current_user->id) ? $current_user->id : '');
@@ -207,8 +206,7 @@
             }
         })
     </script>
-@endpush
-
+@endPushOnce
 
 <form class="bodyModal" id="ticketForm">
     <div class="bodyModal__text">
@@ -244,7 +242,7 @@
     <div class="bodyModal__text">
         <label for="desc" class="bodyModal__text__label">Description</label>
         <textarea required id="desc" cols="20" rows="10" class="bodyModal__text__input"
-            placeholder="Description of a problem">{{ isset($ticket) ? $ticket->description : null }}
+            placeholder="Description of a problem">{{ isset($ticket) ? $ticket->description : '' }}
         </textarea>
     </div>
     <div class="bodyModal__buttons">

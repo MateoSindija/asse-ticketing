@@ -1,8 +1,12 @@
+@php
+    $reply_id = $reply->id ?? '';
+@endphp
+
 <script hidden>
     $(document).ready(() => {
         const baseUrl = "http://127.0.0.1:8000/";
         const commentID = @json($comment->id);
-        const replyID = @json(isset($reply)) ? @json($reply->id) : "";
+
         $(".bodyModal__commentAdd__buttons__cancel").on("click", () => {
             $(".bodyModal").animate({
                 width: "toggle"
@@ -21,7 +25,8 @@
                 headers: {
                     "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
                 },
-                url: @json(isset($reply)) ? baseUrl + `reply/${replyID}` : baseUrl +
+                url: @json(isset($reply)) ? baseUrl +
+                    `reply/${@json($reply_id)}` : baseUrl +
                     `comment/${commentID}`,
                 data: @json(isset($reply)) ? {
                     commentID: commentID,

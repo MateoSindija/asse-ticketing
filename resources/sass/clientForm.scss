@@ -1,0 +1,75 @@
+@import "mixins";
+@import "_variables";
+
+.input {
+    border-radius: 4px;
+    padding: 8px;
+    border: 1px solid $input-border;
+
+    &--error {
+        border: 1px solid red;
+    }
+
+    &:focus {
+        outline: 1px solid #b7b6b6;
+    }
+}
+
+.label {
+    font-weight: 700;
+}
+
+.clientForm {
+    display: flex;
+    justify-content: center;
+    &__form {
+        margin-top: 30px;
+        width: 330px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+
+        &__title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        &__container {
+            display: flex;
+            flex-direction: row;
+            margin-bottom: 10px;
+
+            &__inputLabel {
+                display: flex;
+                flex-direction: column;
+                margin-right: 10px;
+
+                &__label {
+                    margin-bottom: 5px;
+                }
+                &__input {
+                    width: 150px;
+                }
+            }
+        }
+
+        &__label {
+            margin-bottom: 5px;
+        }
+        &__input {
+            margin-bottom: 10px;
+        }
+
+        &__button {
+            border: none;
+            background-color: #259bf7;
+            color: white;
+            padding: 3px 10px 3px 10px;
+
+            &:hover {
+                filter: brightness(0.9);
+            }
+        }
+    }
+}

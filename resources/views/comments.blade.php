@@ -29,8 +29,7 @@
         return $isEdited ? '(edited)' : '';
     }
 @endphp
-
-@push('head')
+@pushOnce('head')
     <script>
         $(document).ready(() => {
             const baseUrl = "http://127.0.0.1:8000/";
@@ -39,32 +38,9 @@
 
             $(".bodyModal__comments__comment__buttons__delete").on("click", function() {
                 const commentID = $(this).data('id');
-                $.ajax({
-                    type: "DELETE",
-                    url: baseUrl + `comment/${commentID}`,
-                    headers: {
-                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
-                    },
-                    success: function(response) {
-                        Toastify({
-                            text: "Comment deleted",
-                            duration: TOAST_DURATION,
-                            close: true,
-                            gravity: "top",
-                            position: "center",
-                            style: {
-                                background: "#50C996",
-                            },
-                        }).showToast();
-                        $("#commentBody").html(response)
-                        const commentCountDiv = $(
-                            ".newModal__selector__button__commentCount");
-                        const currentCommentCount = parseInt(commentCountDiv.text());
 
-                        commentCountDiv.text(currentCommentCount - 1);
+                deleteComment(commentID);
 
-                    }
-                });
             })
 
             $(".bodyModal__comments__comment__replies__buttons__edit").on("click", function() {
@@ -75,7 +51,7 @@
                 }, 350, () => {
                     $.ajax({
                         type: "GET",
-                        url: baseUrl + `reply/${replyID}/edit`,
+                        url: baseUrl + `comment/${replyID}/edit`,
                         success: function(response) {
                             $("#bodyDetail").html(response);
                         }
@@ -91,14 +67,14 @@
 
                 $.ajax({
                     type: "POST",
-                    url: baseUrl + "reply",
+                    url: baseUrl + "comment",
                     headers: {
                         "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
                     },
                     data: {
-                        reply: reply,
+                        comment: reply,
                         ticket_id: ticketID,
-                        comment_id: commentID,
+                        parent_id: commentID,
                     },
                     success: function(response) {
                         $("#bodyDetail").html(response);
@@ -118,35 +94,9 @@
             })
 
             $(".bodyModal__comments__comment__replies__buttons__delete").on("click", function() {
-                const replyID = $(this).data('reply');
-                const commentID = $(this).data('comment');
+                const commentID = $(this).data('reply');
 
-                $.ajax({
-                    type: "DELETE",
-                    url: baseUrl + `reply/${commentID}/${replyID}`,
-                    headers: {
-                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
-                    },
-                    success: function(response) {
-                        Toastify({
-                            text: "Reply deleted",
-                            duration: TOAST_DURATION,
-                            close: true,
-                            gravity: "top",
-                            position: "center",
-                            style: {
-                                background: "#50C996",
-                            },
-                        }).showToast();
-                        $("#commentBody").html(response)
-                        const commentCountDiv = $(
-                            ".newModal__selector__button__commentCount");
-                        const currentCommentCount = parseInt(commentCountDiv.text());
-
-                        commentCountDiv.text(currentCommentCount - 1);
-
-                    }
-                });
+                deleteComment(commentID);
             })
 
 
@@ -231,10 +181,38 @@
                 });
             })
 
+            const deleteComment = (commentID) => {
+                $.ajax({
+                    type: "DELETE",
+                    url: baseUrl + `comment/${commentID}`,
+                    headers: {
+                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                    },
+                    success: function(response) {
+                        Toastify({
+                            text: "Comment deleted",
+                            duration: TOAST_DURATION,
+                            close: true,
+                            gravity: "top",
+                            position: "center",
+                            style: {
+                                background: "#50C996",
+                            },
+                        }).showToast();
+                        $("#commentBody").html(response)
+                        const commentCountDiv = $(
+                            ".newModal__selector__button__commentCount");
+                        const currentCommentCount = parseInt(commentCountDiv.text());
+
+                        commentCountDiv.text(currentCommentCount - 1);
+
+                    }
+                });
+            }
+
         })
     </script>
-@endpush
-
+@endPushOnce
 <div id="commentBody">
     <div class="bodyModal">
         <form id="commentForm" class="bodyModal__commentAdd">
@@ -279,7 +257,7 @@
                         </div>
                     </form>
 
-                    @foreach ($comment->replies as $reply)
+                    @foreach ($comment->children as $reply)
                         <div class="bodyModal__comments__comment__replies">
                             <div class="bodyModal__comments__comment__replies__header">
                                 <div class="bodyModal__comments__comment__replies__header__name">
@@ -291,16 +269,15 @@
                                     {{ checkIfEdited($reply->created_at, $reply->updated_at) }}
                                 </div>
                             </div>
-                            <div class="bodyModal__comments__comment__replies__reply">{{ $reply->reply }}</div>
+                            <div class="bodyModal__comments__comment__replies__reply">{{ $reply->comment }}</div>
 
-                            @if ($userID == $comment->user_id)
+                            @if ($userID == $reply->user_id)
                                 <div class="bodyModal__comments__comment__replies__buttons">
                                     <button type="button" class="bodyModal__comments__comment__replies__buttons__edit"
                                         data-id="{{ $reply->id }}">Edit</button>
                                     <button type="button"
                                         class="bodyModal__comments__comment__replies__buttons__delete"
-                                        data-reply="{{ $reply->id }}"
-                                        data-comment="{{ $comment->id }}">Delete</button>
+                                        data-reply="{{ $reply->id }}">Delete</button>
                                 </div>
                             @endif
                         </div>

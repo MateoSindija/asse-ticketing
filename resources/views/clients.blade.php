@@ -1,76 +1,108 @@
-@extends('layouts.app')
 @php
     $entries = $clients->perPage();
 @endphp
-@push('head')
-    <script hidden>
-        $(document).ready(() => {
-            const currentPage = @json($clients->currentPage());
-            const baseUrl = "http://127.0.0.1:8000/";
-            const entries = @json($entries);
-            $(".clients__row__actions__button").on("click", function(event) {
-                const clientID = $(this).data('id')
-                $.ajax({
-                    type: "GET",
-                    url: baseUrl +
-                        `client/${clientID}/edit`,
-                    success: function(response) {
-                        $("#editClient").animate({
-                            width: 'toggle'
-                        }, 350, () => {
-                            $("#bodyEditClient").html(response);
-                        })
-                    }
-                });
-            })
+<script id="clients">
+    $(document).ready(() => {
+        const currentPage = @json($clients->currentPage());
+        const baseUrl = "http://127.0.0.1:8000/";
+        const entries = @json($entries);
+        let clientID = "";
 
-
-            $("#entriesClients").on("change", (event) => {
-                const value = event.target.value;
-
-                $.ajax({
-                    type: "GET",
-                    url: baseUrl +
-                        `client?entries=${value}`,
-                    success: function(response) {
-                        $("#table").html(response)
-                    }
-                });
-            })
-
-            $(".footer__pagination__pages__pageButton").on("click", (event) => {
-                const newPage = event.target.innerText;
-
-                $.ajax({
-                    type: "GET",
-                    url: baseUrl +
-                        `client?page=${newPage}&entries=${entries}`,
-                    success: function(response) {
-                        $("#table").html(response)
-                    }
-                })
-            })
-
-            $("#nextPageClient").on("click", (event) => {
-                loadPage(currentPage + 1)
-            })
-            $("#prevPageClient").on("click", (event) => {
-                loadPage(currentPage - 1)
-            })
-
-            const loadPage = (newPageIndex) => {
-                $.ajax({
-                    type: "GET",
-                    url: baseUrl +
-                        `client?page=${newPageIndex}&entries=${entries}`,
-                    success: function(response) {
-                        $("#table").html(response)
-                    }
-                });
-            }
+        $(".clients__row__actions__button").on("click", function(event) {
+            clientID = $(this).data('id') ? $(this).data('id') : clientID
+            $.ajax({
+                type: "GET",
+                url: baseUrl +
+                    `client/${clientID}/edit`,
+                success: function(response) {
+                    $("#editClient").animate({
+                        width: 'toggle'
+                    }, 350, () => {
+                        addSelector(true);
+                        $("#bodyEditClient").html(response);
+                    })
+                }
+            });
         })
-    </script>
-@endpush
+
+        $("#clientSelectorEdit").off().on("click", function(event) {
+            $.ajax({
+                type: "GET",
+                url: baseUrl +
+                    `client/${clientID}/edit`,
+                success: function(response) {
+                    addSelector(true);
+                    $("#bodyEditClient").html(response);
+                }
+            });
+        })
+
+        $("#clientSelectorTickets").off().on("click", () => {
+            console.log("zovem")
+            $.ajax({
+                type: "GET",
+                url: baseUrl + `ticket?clientID=${clientID}`,
+                success: function(response) {
+                    addSelector(false);
+                    $("#bodyEditClient").html(response);
+                }
+            });
+        })
+
+        $("#entriesClients").on("change", (event) => {
+            const value = event.target.value;
+
+            $.ajax({
+                type: "GET",
+                url: baseUrl +
+                    `client?entries=${value}`,
+                success: function(response) {
+                    $("#table").html(response);
+                }
+            });
+        })
+
+        $(".footer__pagination__pages__pageButton").on("click", (event) => {
+            const newPage = event.target.innerText;
+
+            $.ajax({
+                type: "GET",
+                url: baseUrl +
+                    `client?page=${newPage}&entries=${entries}`,
+                success: function(response) {
+                    $("#table").html(response)
+                }
+            })
+        })
+
+        $("#nextPageClient").on("click", (event) => {
+            loadPage(currentPage + 1)
+        })
+        $("#prevPageClient").on("click", (event) => {
+            loadPage(currentPage - 1)
+        })
+
+        const addSelector = (selector) => {
+            if (selector) {
+                $("#clientSelectorEdit").addClass("newModal__selector__button--highlight")
+                $("#clientSelectorTickets").removeClass("newModal__selector__button--highlight")
+            } else {
+                $("#clientSelectorEdit").removeClass("newModal__selector__button--highlight")
+                $("#clientSelectorTickets").addClass("newModal__selector__button--highlight")
+            }
+        }
+        const loadPage = (newPageIndex) => {
+            $.ajax({
+                type: "GET",
+                url: baseUrl +
+                    `client?page=${newPageIndex}&entries=${entries}`,
+                success: function(response) {
+                    $("#table").html(response);
+                }
+            });
+        }
+    })
+</script>
 
 <div class="clients">
     <div class="clients__header">

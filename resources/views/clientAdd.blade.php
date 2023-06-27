@@ -1,101 +1,109 @@
-@extends('layouts.app')
-@push('head')
-    <script hidden>
-        $(function() {
-            const TOAST_DURATION = 2000;
-            const baseUrl = "http://127.0.0.1:8000/";
+@php
+    $client_id = $client->id ?? '';
+@endphp
+<script hidden>
+    $(function() {
+        const TOAST_DURATION = 2000;
+        const baseUrl = "http://127.0.0.1:8000/";
 
-            $("#first").on("input", (event) => {
-                const value = event.target.value;
-                getSearchValues("user", value);
+        $("#first").on("input", (event) => {
+            const value = event.target.value;
+            getSearchValues("user", value);
+        });
+
+        $("#client").on("input", (event) => {
+            const value = event.target.value;
+            getSearchValues("client", value);
+        });
+
+        $(".bodyModal__buttons__delete").on("click", () => {
+            $.ajax({
+                type: "DELETE",
+                url: baseUrl + `client/${@json($client_id)}`,
+                headers: {
+                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                },
+                success: function(response) {
+                    Toastify({
+                        text: "Client deleted",
+                        duration: TOAST_DURATION,
+                        close: true,
+                        gravity: "top",
+                        position: "center",
+                        style: {
+                            background: "#50C996",
+                        },
+                    }).showToast();
+                    $("#table").html(response)
+                    $("#editClient").animate({
+                        width: 'toggle'
+                    }, 350, () => {
+                        $("#bodyEditClient").empty()
+                    });
+                }
             });
+        })
 
-            $("#client").on("input", (event) => {
-                const value = event.target.value;
-                getSearchValues("client", value);
-            });
-
-            $(".bodyModal__buttons__delete").on("click", () => {
-                $.ajax({
-                    type: "DELETE",
-                    url: baseUrl + `client/${@json($client->id)}`,
-                    headers: {
-                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
-                    },
-                    success: function(response) {
-                        $(".tickets").html(response)
+        $("#ticketForm").on("submit", (event) => {
+            event.preventDefault();
+            const firstName = $("#name").val();
+            const lastName = $("#surname").val();
+            const phone = $("#phone").val();
+            const email = $("#email").val();
+            const url = @json(isset($client)) ? `client/${@json($client_id)}` :
+                "client";
+            $.ajax({
+                type: @json(isset($client)) ? "PATCH" : "POST",
+                url: baseUrl + url,
+                headers: {
+                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                },
+                data: {
+                    first_name: firstName,
+                    last_name: lastName,
+                    phone: phone,
+                    email: email,
+                },
+                success: function(response) {
+                    Toastify({
+                        text: @json(isset($client)) ? "Client updated" :
+                            "Client added",
+                        duration: TOAST_DURATION,
+                        close: true,
+                        gravity: "top",
+                        position: "center",
+                        style: {
+                            background: "#50C996",
+                        },
+                    }).showToast();
+                    $(":input", "#ticketForm").val("")
+                    if (@json(isset($client))) {
+                        $("#table").html(response)
                         $("#editClient").animate({
                             width: 'toggle'
                         }, 350, () => {
                             $("#bodyEditClient").empty()
                         });
+
                     }
-                });
-            })
 
-            $("#ticketForm").on("submit", (event) => {
-                event.preventDefault();
-                const firstName = $("#name").val();
-                const lastName = $("#surname").val();
-                const phone = $("#phone").val();
-                const email = $("#email").val();
-                const url = @json(isset($client)) ? `client/${@json($client->id)}` :
-                    "client";
-
-                $.ajax({
-                    type: @json(isset($client)) ? "PATCH" : "POST",
-                    url: baseUrl + url,
-                    headers: {
-                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
-                    },
-                    data: {
-                        first_name: firstName,
-                        last_name: lastName,
-                        phone: phone,
-                        email: email,
-                    },
-                    success: function(response) {
-                        Toastify({
-                            text: @json(isset($client)) ? "Client updated" :
-                                "Client added",
-                            duration: TOAST_DURATION,
-                            close: true,
-                            gravity: "top",
-                            position: "center",
-                            style: {
-                                background: "#50C996",
-                            },
-                        }).showToast();
-                        $(":input", "#ticketForm").val("")
-
-                        if (@json(isset($client))) {
-                            $(".tickets").html(response)
-                            $("#editClient").animate({
-                                width: 'toggle'
-                            }, 350, () => {
-                                $("#bodyEditClient").empty()
-                            });
-
-                        }
-                    },
-                    error: function(response) {
-                        Toastify({
-                            text: response.responseJSON.message,
-                            duration: TOAST_DURATION,
-                            close: true,
-                            gravity: "top",
-                            position: "center",
-                            style: {
-                                background: "lightcoral",
-                            },
-                        }).showToast();
-                    },
-                });
+                },
+                error: function(response) {
+                    Toastify({
+                        text: response.responseJSON.message,
+                        duration: TOAST_DURATION,
+                        close: true,
+                        gravity: "top",
+                        position: "center",
+                        style: {
+                            background: "lightcoral",
+                        },
+                    }).showToast();
+                },
             });
         });
-    </script>
-@endpush
-
+    });
+</script>
 
 <form class="bodyModal" id="ticketForm">
     <div class="bodyModal__text">

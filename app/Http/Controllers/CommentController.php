@@ -4,14 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use App\Http\Requests\StoreCommentsRequest;
-use App\Http\Requests\UpdateCommentsRequest;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Log\Logger;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
-
-use function Psy\debug;
 
 class CommentController extends Controller
 {
@@ -31,33 +26,23 @@ class CommentController extends Controller
      * @param string $ticket_id
      * @return array App\Models\Comment
      */
-    public function index(string $ticket_id)
+    public function index(string $ticket_id): View
     {
-        $comments = $this->getComments($ticket_id);
+        $comments = Comment::getComments($ticket_id);
 
 
         return view("comments", ["comments" => $comments, "ticket_id" => $ticket_id]);
     }
 
-    public function getComments(string $ticket_id)
-    {
 
-        $comments = Comment::where("ticket_id", $ticket_id)
-            ->with("replies", "user", "replies.user")
-            ->orderBy("comment.created_at", "asc")
-            ->get();
-
-        return $comments;
-    }
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCommentsRequest $request)
+    public function store(StoreCommentsRequest $request): View
     {
 
         Comment::query()->create($request->all() + ["user_id" => Auth::id()]);
-
-        $comments = $this->getComments($request->ticket_id);
+        $comments = Comment::getComments($request->ticket_id);
 
         return view("comments", ["comments" => $comments, "ticket_id" => $request->ticket_id]);
     }
@@ -76,7 +61,7 @@ class CommentController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Request $request)
+    public function edit(Request $request): View
     {
         $comment = Comment::query()->where("id", $request->comment_id)->first();
 
@@ -86,25 +71,25 @@ class CommentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(StoreCommentsRequest $request, string $id)
+    public function update(StoreCommentsRequest $request, Comment $comment): View
     {
 
-        Comment::where("id", $id)
-            ->update(["comment" => $request->comment]);
+        $comment_id = $request->route("comment_id");
+        $comment->whereId($comment_id)->update($request->validated());
 
-        $comment = Comment::where("id", $request->comment_id)->select("ticket_id")->first();
-        $comments = $this->getComments($comment->ticket_id);
+        $comment = Comment::whereId($request->comment_id)->select("ticket_id")->first();
+        $comments = Comment::getComments($comment->ticket_id);
         return view("comments", ["comments" => $comments, "ticket_id" => $comment->ticket_id]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request)
+    public function destroy(Request $request): View
     {
         $comment = Comment::where("id", $request->comment_id)->select("ticket_id")->first();
         Comment::destroy($request->comment_id);
-        $comments = $this->getComments($comment->ticket_id);
+        $comments = Comment::getComments($comment->ticket_id);
         return view("comments", ["comments" => $comments, "ticket_id" => $comment->ticket_id]);
     }
 }

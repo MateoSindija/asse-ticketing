@@ -5,12 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Http\Requests\StoreClientsRequest;
 use App\Http\Requests\UpdateClientsRequest;
-use Illuminate\Database\Eloquent\Casts\Json;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\Client\Response;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\View\View;
-use Ramsey\Uuid\Uuid;
 
 class ClientController extends Controller
 {
@@ -27,36 +24,19 @@ class ClientController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): View | String
     {
         $search = $request->input("search");
         $entries = $request->input("entries");
         if ($search) {
-            return $this->search($search)->toJson();
+            return Client::searchClients($search)->toJson();
         }
 
-        $clients = Client::orderBy("created_at")->paginate($entries ? $entries : 20);
+        $clients = Client::orderBy("created_at", "DESC")->paginate($entries ? $entries : 20);
 
         return view("clients", ["clients" => $clients]);
     }
 
-    private function search(string | null $q)
-    {
-
-        if ($q == "") {
-            return [];
-        }
-
-        $clients = Client::where(function ($query) use ($q) {
-            $query->orWhere('first_name', 'ILIKE', '%' . $q . '%')
-                ->orWhere('last_name', 'ILIKE', '%' . $q . '%')
-                ->orWhere('email', 'ILIKE', '%' . $q . '%')
-                ->orWhere('phone', 'ILIKE', '%' . $q . '%')
-                ->orWhereRaw('CONCAT("client"."first_name",' . "' '" . ', "client"."last_name") ILIKE ' . "'%$q%'");
-        });
-
-        return $clients->get();
-    }
 
     /**
      * Show the form for creating a new resource.
@@ -97,21 +77,19 @@ class ClientController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Request $request)
+    public function edit(Request $request): View
     {
-        $client = Client::where("id", $request->client_id)->first();
+        $client = Client::find($request->client_id);
         return view("clientAdd", ["client" => $client]);
     }
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateClientsRequest $request, string $id)
+    public function update(UpdateClientsRequest $request, Client $client): View
     {
-
-        Client::where("id", $id)
-            ->update($request->all());
-
-        $clients = Client::orderBy("created_at")->paginate(20);
+        $client_id = $request->route("client_id");
+        $client->whereId($client_id)->update($request->validated());
+        $clients = $client->orderBy("created_at", "DESC")->paginate(20);
 
         return view("clients", ["clients" => $clients]);
     }
@@ -119,10 +97,10 @@ class ClientController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $client_id)
+    public function destroy(string $client_id): View
     {
         Client::destroy($client_id);
-        $clients = Client::orderBy("created_at")->paginate(20);
+        $clients = Client::orderBy("created_at", "desc")->paginate(20);
 
         return view("clients", ["clients" => $clients]);
     }

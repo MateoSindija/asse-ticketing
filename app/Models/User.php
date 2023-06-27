@@ -12,6 +12,7 @@ use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 
@@ -23,7 +24,7 @@ class User extends Model implements
 {
     use Authenticatable, Authorizable, CanResetPassword, MustVerifyEmail, HasFactory, HasUuids, Notifiable;
 
-    protected $table = 'user';
+    protected $table = 'users';
     protected $primaryKey = "id";
     protected $fillable = ["first_name", "last_name", "email", "password"];
     protected $hidden = ['password', 'remember_token'];
@@ -39,8 +40,23 @@ class User extends Model implements
         return $this->hasMany(Comment::class);
     }
 
-    public function replies(): HasMany
-    {
-        return $this->hasMany(Reply::class, "user_id", "id");
+    public function scopeSearchUsers(
+        $query,
+        ?string $q,
+
+    ): Collection {
+
+        if ($q == "") {
+            return [];
+        }
+
+        $users = User::where(function ($query) use ($q) {
+            $query->orWhere('first_name', 'ILIKE', '%' . $q . '%')
+                ->orWhere('last_name', 'ILIKE', '%' . $q . '%')
+                ->orWhere('email', 'ILIKE', '%' . $q . '%')
+                ->orWhereRaw('CONCAT("users"."first_name",' . "' '" . ', "users"."last_name") ILIKE ' . "'%$q%'");
+        });
+
+        return $users->get();
     }
 }

@@ -108,6 +108,53 @@
         }
     }
 
+    &__clientTicket {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        &__info {
+            max-width: 70%;
+
+            &__titleDate {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                &__separator {
+                    margin: 0 10px;
+                    color: $input-border;
+                }
+
+                &__date {
+                    color: $input-border;
+                }
+
+                &__title {
+                    font-weight: 700;
+                    font-size: 15px;
+                }
+            }
+            &__desc {
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+        }
+
+        &__details {
+            height: 30px;
+            border: none;
+            background-color: #259bf7;
+            color: white;
+            padding: 3px 10px 3px 10px;
+
+            &:hover {
+                filter: brightness(0.9);
+            }
+        }
+    }
+
     &__commentAdd {
         margin-bottom: 10px;
 

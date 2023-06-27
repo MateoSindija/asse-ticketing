@@ -3,16 +3,72 @@
 .home {
     padding: 15px 30px;
     position: relative;
+    height: 100vh;
 
     .header {
         display: inline-flex;
         justify-content: space-between;
         margin-bottom: 20px;
         width: 100%;
+        height: 5%;
 
         &__buttons {
             display: flex;
             flex-direction: row;
+
+            &__notification {
+                position: relative;
+
+                &__list {
+                    position: absolute;
+                    box-shadow: 2px 3px 5px #999;
+                    border-radius: 6px;
+                    padding: 3px 0;
+                    display: none;
+                    width: 200px;
+                    top: 40px;
+                    right: 30px;
+                    background-color: white;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    z-index: 10;
+
+                    @include scroll-bar();
+                }
+                &__button {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    position: relative;
+                    margin-right: 30px;
+                    border: none;
+                    background-color: white;
+                    border-radius: 50%;
+                    padding: 10px;
+                    height: 40px;
+
+                    &:hover {
+                        filter: brightness(0.9);
+                    }
+
+                    &__counter {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        position: absolute;
+                        padding: 3px;
+                        border-radius: 50%;
+                        width: 15px;
+                        height: 15px;
+                        right: 5px;
+                        top: 23px;
+                        font-size: 10px;
+                        background-color: red;
+                        color: white;
+                        font-weight: 700;
+                    }
+                }
+            }
 
             &__logout {
                 display: flex;
@@ -43,6 +99,7 @@
         flex-direction: row;
         justify-content: space-between;
         margin-bottom: 15px;
+        min-height: 50px;
 
         &__item {
             display: flex;
@@ -130,7 +187,7 @@
     }
 
     .clients {
-        height: 380px;
+        height: 55%;
         overflow-y: scroll;
         @include scroll-bar();
         width: 100%;
@@ -427,7 +484,7 @@
     }
 
     .tickets {
-        height: 380px;
+        height: 55%;
         overflow-y: scroll;
         @include scroll-bar();
         width: 100%;
@@ -569,7 +626,7 @@
         display: flex;
         flex-direction: row;
         align-items: center;
-        height: 50px;
+        height: 8%;
         justify-content: space-between;
 
         &__entries {

@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('reply', function (Blueprint $table) {
+        Schema::create('messages', function (Blueprint $table) {
             $table->uuid("id")->primary();
-            $table->uuid("comment_id");
-            $table->uuid("user_id");
-            $table->foreign("comment_id")->references("id")->on("comment");
-            $table->foreign("user_id")->references("id")->on("user");
-            $table->string("reply", 300);
+            $table->foreignUuid("user_id");
+            $table->string("title", 100);
             $table->timestamps();
         });
     }
@@ -27,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('reply');
+        Schema::dropIfExists('messages');
     }
 };

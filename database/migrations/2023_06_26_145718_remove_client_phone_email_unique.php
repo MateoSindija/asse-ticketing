@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table("users", function (Blueprint $table) {
-            $table->rememberToken();
+        Schema::table('clients', function (Blueprint $table) {
+            $table->string('email')->unique(false)->nullable()->change();
+            $table->string('phone')->unique(false)->nullable()->change();
         });
     }
 
@@ -21,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropColumns("users", "remember_token");
+        //
     }
 };

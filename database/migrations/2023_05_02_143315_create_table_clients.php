@@ -7,17 +7,16 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.  
+     * Run the migrations.
      */
     public function up(): void
     {
-
-        Schema::create("user", function (Blueprint $table) {
+        Schema::create("clients", function (Blueprint $table) {
             $table->uuid("id")->primary();
             $table->string("first_name", 50);
             $table->string("last_name", 50);
+            $table->string("phone", 20)->unique();
             $table->string("email")->unique();
-            $table->string("password");
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::drop("user");
+        Schema::drop("clients");
     }
 };

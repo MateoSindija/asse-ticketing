@@ -15,6 +15,7 @@
         })
 
 
+
         $("#editSelectorDetails").on("click", () => {
             setHighlight("#editSelectorDetails")
             $("#bodyDetail").empty()
@@ -98,8 +99,15 @@
             <div class="newModal__info__content__title">Assigne</div>
             <div class="newModal__info__content__container">
                 <div class="newModal__info__content__container__name">
-                    {{ $ticket->user_first_name . ' ' . $ticket->user_last_name }}</div>
-                <div class="newModal__info__content__container__email">{{ $ticket->user_email }}</div>
+                    @if ($ticket->user != null)
+                        {{ $ticket->user->first_name . ' ' . $ticket->user->last_name }}
+                    @endif
+                </div>
+                <div class="newModal__info__content__container__email">
+                    @if ($ticket->user != null)
+                        {{ $ticket->user->email }}
+                    @endif
+                </div>
             </div>
         </div>
         <div class="newModal__info__content">
@@ -120,14 +128,14 @@
             <div class="newModal__info__content__title">Client</div>
             <div class="newModal__info__content__container">
                 <div class="newModal__info__content__container__name">
-                    {{ $ticket->client_first_name . ' ' . $ticket->client_last_name }}</div>
-                <div>{{ $ticket->client_email }}</div>
+                    {{ $ticket->client->first_name . ' ' . $ticket->client->last_name }}</div>
+                <div>{{ $ticket->client->email }}</div>
             </div>
 
         </div>
         <div class="newModal__info__content">
             <div class="newModal__info__content__title">Phone</div>
-            <div class="newModal__info__content__value"> {{ $ticket->client_phone }}</div>
+            <div class="newModal__info__content__value"> {{ $ticket->client->phone }}</div>
         </div>
     </div>
 
